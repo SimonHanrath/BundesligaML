@@ -1,0 +1,32 @@
+{
+	"minimal_structure": [
+		{
+			"date": "0",
+			"homeClub": "Bayern",
+			"visitingClub": "Tübingen",
+			"goalsHomeClub": 0,
+			"goalsVisitingClub": 7
+		},
+		{
+			"date": "0",
+			"homeClub": "Tübingen",
+			"visitingClub": "Borussia",
+			"goalsHomeClub": 3,
+			"goalsVisitingClub": 2
+		},
+		{
+			"date": "0",
+			"homeClub": "Tübingen",
+			"visitingClub": "Bremen",
+			"goalsHomeClub": 0,
+			"goalsVisitingClub": 0
+		},
+		{
+			"date": "0",
+			"homeClub": "Bremen",
+			"visitingClub": "Leverkusen",
+			"goalsHomeClub": 0,
+			"goalsVisitingClub": 1
+		}
+	]
+}

@@ -11,6 +11,8 @@ from kivy.base import runTouchApp
 from kivy.uix.spinner import Spinner
 from kivy.lang import Builder
 from kivy.uix.widget import Widget
+import json
+from teamproject.models import BaselineAlgo
 
 def window():
     """
@@ -82,7 +84,12 @@ def main():
 
    # For demo purposes, this is how you could access methods from other
     # modules:
-    data = fetch_data()
-    model = ExperienceAlwaysWins(data)
+    
+    f = open('teamproject/example.json',)
+    data = json.load(f)
+    model = BaselineAlgo(data)
     winner = model.predict_winner('Tübingen', 'Leverkusen')
     print(winner)
+    f.close()
+
+    
