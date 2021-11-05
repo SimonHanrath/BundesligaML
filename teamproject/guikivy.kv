@@ -1,0 +1,39 @@
+<MyLayout>
+	BoxLayout:
+		orientation: "vertical"
+		size: root.width, root.height
+		Spinner:
+			id: homespinner_id
+			size_hint: None, None
+			size: 300, 50
+			pos_hint: {'center': (.8, .8)}
+			text: 'Choose the home team'
+			values: 'Tübingen', 'Reutlingen', 'Berlin', 'Mannheim'
+			
+		Spinner:
+			id: guestspinner_id
+			size_hint: None, None
+			size: 300, 50
+			pos_hint: {'center': (.5, .5)}
+			text: 'Choose the guest team'
+			values: 'Tübingen', 'Reutlingen', 'Berlin', 'Mannheim'
+		Button:
+			text: 'Activate Crawler'
+			on_press: print("ouch! More gently please")
+			on_release: print("ahhh")
+			on_state:
+				print("my current state is {}".format(self.state))
+		Button:
+			text: 'Start Training'
+			on_press: print("ouch! More gently please")
+			on_release: print("ahhh")
+			on_state:
+				print("my current state is {}".format(self.state))
+		Button:
+			text: 'Show Results'
+			on_press: print("ouch! More gently please")
+			on_release: print("ahhh")
+			on_state:
+				print("my current state is {}".format(self.state))
+				
+	
