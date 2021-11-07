@@ -10,15 +10,14 @@ matches. A match is a dictionary of the following structure:
 {
     "date": "YYYY-MM-DDTHH:MM:SSZ",
     "homeClub": str,
-    "visitingClub": str,
-    "goalsHomeClub": int,
-    "goalsVisitingClub": int
+    "guestClub": str,
+    "homeScore": int,
+    "guestScore": int
 }
 where "date" specifies the date and time a match took place in UTC as indicated
 by letter "Z" (zero meridian) at the end of the string,
-"homeClub" and "visitingClub" represent the names of the home and visiting club,
-"goalsHomeClub" and "goalsVisitingClub" represent the final goals score of each
-club.
+"homeClub" and "guestClub" represent the names of the home and visiting club,
+"homeScore" and "guestScore" represent the final goals score of each club.
 For example call:
 data = fetch_data(2020,1,2020,8)
 with open("matches.json", "w") as file:
@@ -68,20 +67,20 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int) -> list:
             for match in matchesOfInterest:
                 # get final score, which is the last element of the list 'goals'
                 # set final score to 0:0 if 'goals' is an empty list
-                scoreFinal = match["goals"][-1:]
-                if scoreFinal:
-                    scoreHome = scoreFinal[0]["scoreTeam1"]
-                    scoreVisiting = scoreFinal[0]["scoreTeam2"]
+                finalScore = match["goals"][-1:]
+                if finalScore:
+                    homeScore = finalScore[0]["scoreTeam1"]
+                    guestScore = finalScore[0]["scoreTeam2"]
                 else:
                     scoreHome = 0
-                    scoreVisiting = 0
+                    guestScore = 0
                 # add current match to the resulting list of matches
                 matchesOutput.append({
                     "date": match["matchDateTimeUTC"],
                     "homeClub": match["team1"]["teamName"],
-                    "visitingClub": match["team2"]["teamName"],
-                    "goalsHomeClub": scoreHome,
-                    "goalsVisitingClub": scoreVisiting
+                    "guestClub": match["team2"]["teamName"],
+                    "homeScore": homeScore,
+                    "guestScore": guestScore
                 })
 
     # postconiditions: ensure valid and consistent data format
@@ -91,20 +90,19 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int) -> list:
         assert re.search("\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", m["date"]), (
             "Invalid date format")
         assert isinstance(m["homeClub"], str)
-        assert isinstance(m["visitingClub"], str)
-        assert len(m["homeClub"]) > 0 and len(m["visitingClub"]) > 0, (
+        assert isinstance(m["guestClub"], str)
+        assert len(m["homeClub"]) > 0 and len(m["guestClub"]) > 0, (
             "Invalid team name")
-        assert isinstance(m["goalsHomeClub"], int)
-        assert isinstance(m["goalsVisitingClub"], int)
-        assert m["goalsHomeClub"] >= 0 and m["goalsVisitingClub"] >= 0, (
+        assert isinstance(m["homeScore"], int)
+        assert isinstance(m["guestScore"], int)
+        assert m["homeScore"] >= 0 and m["guestScore"] >= 0, (
             "Invalid number of goals")
 
     # return resulting list of matches
     return matchesOutput
 
 
-"""
+
 data = fetch_data(2020,1,2020,8)
 with open("matches.json", "w") as file:
     json.dump(data, file)
-"""
