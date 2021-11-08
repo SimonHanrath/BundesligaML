@@ -69,30 +69,29 @@ class BaselineAlgo:
     def __init__(self, matches):
         self.matches = matches
 
-    def predict_winner(self, home_team, guest_team):
+    def predict_winner(self, home_team:str, guest_team:str):
         wins_home_team = 0
         wins_guest_team = 0
         draws = 0
         num_matches = 0
         draws_total = 0
 
-        for match in self.matches['minimal_structure']:
-
+        for match in self.matches:
             # count draws
-            if match["goalsHomeClub"] == match["goalsVisitingClub"] == 0:
+            if match["homeScore"] == match["guestScore"]:
                 draws_total += 1
 
             # use sets to easily detect when right teams play
-            playing_clubs = set([match['homeClub'], match['visitingClub']])
+            playing_clubs = set([match['homeClub'], match['guestClub']])
             # if the right teams play measure the result
             if playing_clubs == set([home_team, guest_team]):
                 num_matches += 1
-                if match["goalsHomeClub"] > match["goalsVisitingClub"]:
+                if match["homeScore"] > match["guestScore"]:
                     if match["homeClub"] == home_team:
                         wins_home_team += 1
                     else:
                         wins_guest_team += 1
-                elif match["goalsHomeClub"] < match["goalsVisitingClub"]:
+                elif match["homeScore"] < match["guestScore"]:
                     if match["homeClub"] == home_team:
                         wins_guest_team += 1
                     else:
@@ -103,7 +102,8 @@ class BaselineAlgo:
         # could do same for home vs visiting but I am not sure whether this
         # is needed
         if num_matches == 0:
-            draws_total = draws_total/len(self.matches['minimal_structure'])
+            print("No matches of the two teams found")
+            draws_total = draws_total/len(self.matches)
             return [(1-draws_total)/2, draws_total, (1-draws_total)/2]
 
         # return win probability (currently just a list but can easily be changed)

@@ -85,11 +85,9 @@ def main():
    # For demo purposes, this is how you could access methods from other
     # modules:
     
-    f = open('teamproject/example.json',)
+    f = open('teamproject/matches.json',)
     data = json.load(f)
     model = BaselineAlgo(data)
-    winner = model.predict_winner('Tübingen', 'Leverkusen')
+    winner = model.predict_winner('VfL Osnabrück', '1. FC Nürnberg')
     print(winner)
     f.close()
-
-    
