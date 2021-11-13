@@ -93,14 +93,11 @@ def parse_match(match:dict) -> dict:
 fetch_data() fetches match data within a given interval and parses the data by
 calling parse_match(). It returns the relative path to a json file, where the
 match data is saved. For example call:
-filePath = fetch_data(2020,1, 2020,8)
+filePath = fetch_data(2020,1, 2020,38)
 with open(filePath) as file: matches = json.loads(file.read())
 
-ggf. weitere wichtige Daten:
-• Liga
-• Ort
-• Tore: Spielminute, Torschütze, Eigentor?, Strafe?, Verlängerung?
-• Wetter (von woanders)
+ggf. weitere wichtige Daten: Liga; Ort; Tore (Spielminute, Torschütze,
+Eigentor?, Strafe?, Verlängerung?); Wetter (von woanders)
 """
 def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int) -> str:
     # preconditions: check validity of time span
@@ -153,4 +150,13 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int) -> str:
         #    pass # TO-DO: skip unfinished season?
     """
 
-print(fetch_data(2002,1, 2021,38))
+"""
+fetch_seasons() fetches all match data of the last n finished seasons and
+returns the relative path to a json file, where the match data is saved.
+For example call: fetch_seasons(10)
+"""
+def fetch_seasons(num:str) -> str:
+    pass # TO-DO
+
+
+print(fetch_data(2020,1, 2020,38))
