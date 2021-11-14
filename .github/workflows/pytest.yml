@@ -19,11 +19,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-        python3 -m pip install --upgrade pip
-        pip3 install pandas
-        pip3 install pytest
-        pip3 install requests
-        pip3 install typing
+          python3 -m pip install --upgrade pip
+          pip3 install pandas pytest requests typing
 
       - name: Run tests with pytest
         run: pytest
