@@ -2,8 +2,6 @@
 from teamproject import crawler
 import pandas as pd
 
-file = crawler.fetch_data(2020,1,2020,38)
-
 def test_fetch_data():
     file = crawler.fetch_data(2020,1,2020,38)
     data = pd.read_json(file)
