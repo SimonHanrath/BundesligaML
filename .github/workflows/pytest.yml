@@ -1,5 +1,5 @@
 name: Run Python tests
-on: [pull_request, push]
+on:
   push:
     branches:
       - main
