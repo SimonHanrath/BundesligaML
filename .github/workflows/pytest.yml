@@ -17,10 +17,10 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Install Python dependencies
+      - name: Install Python dependencies and teamproject module
         run: |
           python3 -m pip install --upgrade pip
-          pip3 install pandas pytest requests typing
+          pip3 install -e .
 
       - name: Run tests with pytest
-        run: pytest tests/test_crawler.py
+        run: pytest -v
