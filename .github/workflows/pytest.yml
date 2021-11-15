@@ -23,4 +23,4 @@ jobs:
           pip3 install pandas pytest requests typing
 
       - name: Run tests with pytest
-        run: pytest
+        run: pytest tests/test_crawler.py
