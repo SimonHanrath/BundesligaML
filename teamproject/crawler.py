@@ -26,7 +26,7 @@ def api_query(param:str):
     return data
 
 
-def avail_data(details:str = "all") -> list[dict]:
+def avail_data(details:str = "all") -> list:
     """
     Returns all bundesliga data available on openligadb.de.
         Parameters:
@@ -127,4 +127,4 @@ def fetch_seasons(numSeasons:int) -> str:
 # Eigentor?, Strafe?, Verlängerung?); Wetter (von woanders)
 
 #print(fetch_data(2020,1, 2020,38))
-#print(avail_data())
+#print(avail_data("leagues-only"))
