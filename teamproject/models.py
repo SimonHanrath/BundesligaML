@@ -4,28 +4,7 @@ This module contains code for a prediction models.
 
 from collections import Counter
 import json
-
-
-class ExperienceAlwaysWins:
-
-    """
-    An example model that predicts the winner
-    solely based on number of games played.
-    """
-
-    def __init__(self, matches):
-        # We just count the number of games played by all teams and ignore
-        # the winner:
-        self.num_games = (
-            Counter(matches.home_team) +
-            Counter(matches.guest_team))
-
-    def predict_winner(self, home_team, guest_team):
-        """Cast prediction based on the "learned" parameters."""
-        if self.num_games[home_team] >= self.num_games[guest_team]:
-            return home_team
-        else:
-            return guest_team
+import pandas as pd
 
 
 """
@@ -36,76 +15,55 @@ This module contains code for prediction models.
 from collections import Counter
 import json
 
-
-class ExperienceAlwaysWins:
-    """
-    An example model that predicts the winner predicts the winner
-    solely based on number of games played.
-    """
-
-    def __init__(self, matches):
-        # We just count the number of games played by all teams and ignore
-        # the winner:
-        print(matches)
-        self.num_games = (
-                Counter(matches.home_team) +
-                Counter(matches.guest_team))
-        print(self.num_games)
-
-    def predict_winner(self, home_team, guest_team):
-        """Cast prediction based on the "learned" parameters."""
-        if self.num_games[home_team] >= self.num_games[guest_team]:
-            return home_team
-        else:
-            return guest_team
-
-
 class BaselineAlgo:
     """
-    An example model that predicts the winner based on past games between
+    A model that predicts the winner based on the outcome of past games between
     the 2 teams
     """
 
     def __init__(self, matches):
         self.matches = matches
+        self.df = pd.DataFrame(self.matches)
+        
 
-    def predict_winner(self, home_team:str, guest_team:str):
-        wins_home_team = 0
-        wins_guest_team = 0
-        draws = 0
-        num_matches = 0
-        draws_total = 0
+    def predict_winner(self, home_team: str, guest_team: str):
+        df = self.df
 
-        for match in self.matches:
-            # count draws
-            if match["homeScore"] == match["guestScore"]:
-                draws_total += 1
+        # get matches between the two given teams
+        team1 = df.homeClub.values
+        team2 = df.guestClub.values
 
-            # use sets to easily detect when right teams play
-            playing_clubs = set([match['homeClub'], match['guestClub']])
-            # if the right teams play measure the result
-            if playing_clubs == set([home_team, guest_team]):
-                num_matches += 1
-                if match["homeScore"] > match["guestScore"]:
-                    if match["homeClub"] == home_team:
-                        wins_home_team += 1
-                    else:
-                        wins_guest_team += 1
-                elif match["homeScore"] < match["guestScore"]:
-                    if match["homeClub"] == home_team:
-                        wins_guest_team += 1
-                    else:
-                        wins_home_team += 1
-                else:
-                    draws += 1
-        # in case no data is available, calculate average draw probability
-        # could do same for home vs visiting but I am not sure whether this
-        # is needed
-        if num_matches == 0:
-            print("No matches of the two teams found")
-            draws_total = draws_total/len(self.matches)
-            return [(1-draws_total)/2, draws_total, (1-draws_total)/2]
+        matches = df[((team1 == home_team) & (team2 == guest_team)) |
+                     ((team1 == guest_team) & (team2 == home_team))]
 
-        # return win probability (currently just a list but can easily be changed)
-        return [wins_home_team/num_matches, draws/num_matches, wins_guest_team/num_matches]
+        # if no matches exist: return average home winrate, average guest winrate and draw probability
+        if len(matches) == 0:
+            home_score = df.homeScore.values
+            guest_score = df.guestScore.values
+
+            wins_home_team_total = np.sum(home_score > guest_score)
+            wins_guest_team_total = np.sum(home_score < guest_score)
+            draws_total = np.sum(home_score == guest_score)
+
+            # returns probability for each of the 3 events in a list
+            return [wins_home_team_total / len(df), draws_total / len(df), wins_guest_team_total / len(df)]
+
+        # if matches exist: collect results in matches between them
+        home_club = matches.homeClub.values
+        guest_club = matches.guestClub.values
+
+        home_score = matches.homeScore.values
+        guest_score = matches.guestScore.values
+
+        wins_home_team = np.sum((home_score > guest_score) & (home_club == home_team) |
+                                (home_score < guest_score) & (guest_club == home_team))
+
+        wins_guest_team = np.sum((home_score > guest_score) & (home_club == guest_team) |
+                                 (home_score < guest_score) & (guest_club == guest_team))
+
+        draws = np.sum(matches['homeScore'] == matches['guestScore'])
+
+        # returns probability for each of the 3 events in a list
+        return [wins_home_team / len(matches), draws / len(matches), wins_guest_team / len(matches)]
+
 
