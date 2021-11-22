@@ -45,7 +45,7 @@ def avail_data(details:str = "all") -> list:
             league["matchdays"] = [g["groupOrderID"] for g in fetchedGroups]
     return sorted(availLeagues, key=lambda l: l["season"])
 
-  
+
 def parse_match(match:dict) -> dict:
     """
     Converts a match from openligadb.de format into internal format.
@@ -101,8 +101,7 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int) -> str:
             # parse all finished matches within specified interval
             matchesFetched = api_query(f"getmatchdata/{division}/{year}")
             matchesOfInterest = [parse_match(m) for m in matchesFetched
-                if (year < endYear or m["group"]["groupOrderID"] <= endDay)
-                and m["matchIsFinished"]]
+                if (year < endYear or m["group"]["groupOrderID"] <= endDay) and m["matchIsFinished"]]
             matches += matchesOfInterest
     # save resulting list of matches as json file
     with open(filePath, "w") as f:
@@ -120,7 +119,7 @@ def fetch_seasons(numSeasons:int) -> str:
     """
     latestLeague = avail_data("leagues-only")[-1:]
     assert latestLeague, "No available leagues."
-    return fetch_data(latestLeague-numSeasons-1, 1, latestLeague, 0)
+    return fetch_data(latestLeague-numSeasons, 1, latestLeague, 0)
 
 
 # ggf. weitere wichtige Daten: Liga; Ort; Tore (Spielminute, Torschütze,
