@@ -5,7 +5,7 @@ This module contains code for a prediction models.
 from collections import Counter
 import json
 import pandas as pd
-
+import numpy as np
 
 """
 This module contains code for prediction models.

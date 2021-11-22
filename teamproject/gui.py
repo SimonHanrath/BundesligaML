@@ -22,46 +22,28 @@ import sys
 
 
 #from teamproject.crawler import fetch_data
-from teamproject.models import ExperienceAlwaysWins
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
+
 f = open('teamproject/matches.json',)
 data = json.load(f)
 model = BaselineAlgo(data)
-winner = model.predict_winner('VfL Osnabrück', '1. FC Nürnberg')
-print(winner)
-f.close()
+#f.close()
+  
 
-
-
-   # second way to start the application     
-"""
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
-    sys.exit(app.exec_())
-"""
 def main():
     """
     Creates and shows the main window.
     """
-    # For demo purposes, this is how you could access methods from other
-    # modules:
-    
+
     f = open('teamproject/matches.json',)
     data = json.load(f)
     model = BaselineAlgo(data)
-    winner = model.predict_winner('VfL Osnabrück', '1. FC Nürnberg')
-    print(winner)
-    f.close()
+    
+    
     # Add code here to create and initialize window.
-    #window()
     class Ui_Dialog(object):
         def setupUi(self, Dialog):
             Dialog.setObjectName("Dialog")
@@ -78,13 +60,19 @@ def main():
             self.comboBox = QtWidgets.QComboBox(Dialog)
             self.comboBox.setGeometry(QtCore.QRect(60, 80, 301, 61))
             self.comboBox.setObjectName("comboBox")
-            self.comboBox.addItem("")
+            
+            #Loop through the json file and get all the home clubs, this doesn't account for duplicates yet. 
+            for team in data:
+                self.comboBox.addItem(team['homeClub'])
             
             #Combobox 2 for the guest team
             self.comboBox_2 = QtWidgets.QComboBox(Dialog)
             self.comboBox_2.setGeometry(QtCore.QRect(670, 80, 301, 61))
             self.comboBox_2.setObjectName("comboBox_2")
-            self.comboBox_2.addItem("")
+            
+            #Loop through the json file and get all the guest clubs, this doesn't account for duplicates yet. 
+            for team in data:
+                self.comboBox_2.addItem(team['guestClub'])
 
             #Crawler Button
             self.pushButton = QtWidgets.QPushButton(Dialog)
@@ -103,6 +91,7 @@ def main():
             self.pushButton_3 = QtWidgets.QPushButton(Dialog)
             self.pushButton_3.setGeometry(QtCore.QRect(660, 680, 331, 101))
             self.pushButton_3.setObjectName("Show results")
+            self.pushButton_3.clicked.connect(self.resultscall)
 
             #call the retranslate
             self.retranslateUi(Dialog)
@@ -121,11 +110,30 @@ def main():
         
         #this will get called when you press the Start training button
         def trainingcall(self):
-            self.pushButton_2.setText(str(winner))
+            pass
+            
 
         #this will get called when you press the Show results button, I think i will do a popup with the winner.
         def resultscall(self):
-            self.pushButton_2.setText("insert winner here")
+            #printing for test purposes
+            print(self.comboBox.currentText())
+
+            #predict the Winner out of the 2 teams chosen in the comboboxes
+            winner = model.predict_winner(str(self.comboBox.currentText()), str(self.comboBox_2.currentText()))
+            
+            #Test
+            print(winner)
+
+            f.close()
+            """
+            If winner[0] (which is the home win percentage) is higher then the winner[2] (which is the guest winner percentage), 
+            then display the home team in the button text. Else display the guest team. I will probably change this to 
+            a popup window at some point.
+            """
+            if winner[0] > winner[2]:
+                self.pushButton_3.setText(self.comboBox.currentText())
+            else:
+                self.pushButton_3.setText(self.comboBox_2.currentText())
 
 
 
@@ -139,23 +147,11 @@ def main():
             self.pushButton_3.setText(_translate("Dialog", "Show results"))
             self.pushButton_2.setText(_translate("Dialog", "Start training"))
 
+    #create the window
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
-    
-    
-    """
-    app = QApplication(sys.argv)
-    win = QMainWindow()
-    win.setGeometry(200,200,300,300) # sets the windows x, y, width, height
-    win.setWindowTitle("My first window!") # setting the window title
-    label = QLabel(win)
-    label.setText("my first label")
-    label.move(50, 50)  # x, y from top left hand corner.
-    win.show()
-    sys.exit(app.exec_())
-    """
    
