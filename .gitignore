@@ -43,3 +43,7 @@ htmlcov
 .*~
 .*.swp
 _build
+
+# other files
+.DS_Store
+.Rhistory
