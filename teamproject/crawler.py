@@ -45,7 +45,7 @@ def avail_data(details:str = "all") -> list:
             league["matchdays"] = [g["groupOrderID"] for g in fetchedGroups]
     return sorted(availLeagues, key=lambda l: l["season"])
 
-
+  
 def parse_match(match:dict) -> dict:
     """
     Converts a match from openligadb.de format into internal format.
@@ -128,3 +128,4 @@ def fetch_seasons(numSeasons:int) -> str:
 
 #print(fetch_data(2020,1, 2020,38))
 #print(avail_data("leagues-only"))
+#print(avail_data())
