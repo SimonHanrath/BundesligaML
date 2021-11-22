@@ -36,16 +36,14 @@ def avail_data(details:str = "all") -> list[dict]:
     """
     # get all available leagues of bundesliga
     fetchedLeagues = api_query("getavailableleagues")
-    availLeagues = [{"ID": l["leagueID"], "season": int(l["leagueSeason"]),
-        "division": l["leagueShortcut"]} for league in fetchedLeagues
-        if league["leagueShortcut"] in ["bl1", "bl2", "bl3"]]
+    availLeagues = [{"ID":l["leagueId"], "season":int(l["leagueSeason"]), "division":l["leagueShortcut"]}
+        for l in fetchedLeagues if l["leagueShortcut"] in ["bl1","bl2","bl3"]]
     # add available match days to leagues if desired
     if details == "all":
         for league in availLeagues:
-            fetchedGroups = api_query("getavailablegroups/" +
-                f"{league['division']}/{league['season']}")
+            fetchedGroups = api_query(f"getavailablegroups/{league['division']}/{league['season']}")
             league["matchdays"] = [g["groupOrderID"] for g in fetchedGroups]
-    return sorted(availableLeagues, key=lambda l: l["season"])
+    return sorted(availLeagues, key=lambda l: l["season"])
 
 
 def parse_match(match:dict) -> dict:
@@ -89,8 +87,7 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int) -> str:
     assert (startYear < endYear or startDay < endDay), "Invalid day interval."
     # matches is the resulting list of matches
     matches = []
-    filePath = f"{os.path.dirname(__file__)}/crawled_data/" + (
-        f"matches-{startYear}-{startDay}-{endYear}-{endDay}.json")
+    filePath = f"{os.path.dirname(__file__)}/crawled_data/matches-{startYear}-{startDay}-{endYear}-{endDay}.json"
     # check if data has already been crawled before
     try:
         f = open(filePath)
