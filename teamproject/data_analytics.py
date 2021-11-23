@@ -32,18 +32,20 @@ for match in fetchedMatches:
     print(match["homeScore"])
 """
 #testing list of teams in Bundesliga
-teams = ["VfL Wolfsburg", "Borussia Dortmund", "1. FC Nürnberg", "Werder Bremen", "Hertha BSC", "1. FSV Mainz 05", "TSG 1899 Hoffenheim", "VfL Bochum", "SC Freiburg", "FC Bayern München", "VfB Stuttgart", "Hamburger SV",
-         "Bayer Leverkusen", "Hannover 96", "Eintracht Frankfurt", "1. FC Köln", "Borussia Mönchengladbach", "FC Schalke 04" ]
+#teams = ["VfL Wolfsburg", "Borussia Dortmund", "1. FC Nürnberg", "Werder Bremen", "Hertha BSC", "1. FSV Mainz 05", "TSG 1899 Hoffenheim", "VfL Bochum", "SC Freiburg", "FC Bayern München", "VfB Stuttgart", "Hamburger SV",
+#         "Bayer Leverkusen", "Hannover 96", "Eintracht Frankfurt", "1. FC Köln", "Borussia Mönchengladbach", "FC Schalke 04" ]
+
+#List of all teams without dupllicates
 allTeams = []
-dublicate = False
+duplicate = False
 for match in fetchedMatches:
     for team in allTeams:
         if match["homeClub"] == team:
-            dublicate = True
+            duplicate = True
             break
         else:
-            dublicate = False
-    if dublicate == False:
+            duplicate = False
+    if duplicate == False:
         allTeams.append(match["homeClub"])
 
 
@@ -164,7 +166,7 @@ def specificMatches (guestClub):
     wins = 0
     loses = 0
     draws = 0
-    for team in teams:
+    for team in allTeams:
         for match in fetchedMatches:
             if match["guestClub"] == guestClub and match["homeClub"] == team and match["homeScore"] < match["guestScore"]:
                 wins = wins +1
