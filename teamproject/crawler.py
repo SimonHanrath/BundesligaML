@@ -121,7 +121,7 @@ def avail_data(details:str = "all") -> list:
 
     Args:
         details (str): Defaults to "all", specify "league-only" to skip fetching
-        all available matchdays
+                       all available matchdays
 
     Returns:
         A sorted list of leagues (dicts)
