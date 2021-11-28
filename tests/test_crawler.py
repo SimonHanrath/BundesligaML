@@ -2,9 +2,10 @@
 from teamproject import crawler
 import pandas as pd
 
-def test_fetch_data():
-    file = crawler.fetch_data(2020,1,2020,38)
-    data = pd.read_json(file)
+def test_get_data():
+    lowerLimitYear = 2020
+    upperLimitYear = 2020
+    data = crawler.get_data(lowerLimitYear, 1, upperLimitYear, 38)
     # check dtypes
     assert data.date.dtype == "datetime64[ns]"
     assert data.homeClubId.dtype == "int64"
@@ -20,3 +21,6 @@ def test_fetch_data():
     assert (data.guestScore >= 0).all()
     assert (data.homeClub != data.guestClub).all()
     assert (data.homeClubId != data.guestClubId).all()
+    # check interval
+    assert (data.date >= pd.Timestamp(lowerLimitYear,1,1)).all()
+    assert (data.date <= pd.Timestamp(upperLimitYear+1,12,31)).all()
