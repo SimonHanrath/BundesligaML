@@ -13,20 +13,18 @@ form.setupUi(window)
 window.show()
 app.exec()
 """
-import json
-from teamproject.models import BaselineAlgo
-#from PyQt5 import QtWidgets
-#from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
-import sys
-    
 
-
-#from teamproject.crawler import fetch_data
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
+import json
+from teamproject.models import BaselineAlgo
+#from teamproject.crawler import fetch_data
 
+
+
+#open the json file with all the matches, then load this data into the BaselineAlgo
 f = open('teamproject/matches.json',)
 data = json.load(f)
 model = BaselineAlgo(data)
@@ -129,8 +127,6 @@ def main():
 
         #this will get called when you press the Show results button, I think i will do a popup with the winner.
         def resultscall(self):
-            #varibles
-            resultLabelText = "<html><head/><body><p><span style=\" font-size:11pt;\">Results:</span></p><p><br/></p></body></html>"
 
             #printing for test purposes
             print(self.homecomboBox.currentText())
