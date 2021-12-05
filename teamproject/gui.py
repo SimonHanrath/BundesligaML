@@ -87,11 +87,11 @@ def main():
             self.pushButton_2.setObjectName("Start training")
             self.pushButton_2.clicked.connect(self.trainingcall)
             
-            #Show results button
-            self.pushButton_3 = QtWidgets.QPushButton(Dialog)
-            self.pushButton_3.setGeometry(QtCore.QRect(660, 680, 331, 101))
-            self.pushButton_3.setObjectName("Show results")
-            self.pushButton_3.clicked.connect(self.resultscall)
+            
+            self.resultsbutton = QtWidgets.QPushButton(Dialog)
+            self.resultsbutton.setGeometry(QtCore.QRect(660, 680, 331, 101))
+            self.resultsbutton.setObjectName("Show results")
+            self.resultsbutton.clicked.connect(self.resultscall)
 
             #call the retranslate
             self.retranslateUi(Dialog)
@@ -131,9 +131,9 @@ def main():
             a popup window at some point.
             """
             if winner[0] > winner[2]:
-                self.pushButton_3.setText(self.comboBox.currentText())
+                self.resultsbutton.setText(self.comboBox.currentText())
             else:
-                self.pushButton_3.setText(self.comboBox_2.currentText())
+                self.resultsbutton.setText(self.comboBox_2.currentText())
 
 
 
@@ -144,7 +144,7 @@ def main():
             self.comboBox.setItemText(0, _translate("Dialog", "Choose the home team"))
             self.pushButton.setText(_translate("Dialog", "Activate Crawler"))
             self.comboBox_2.setItemText(0, _translate("Dialog", "Choose the guest team"))
-            self.pushButton_3.setText(_translate("Dialog", "Show results"))
+            self.resultsbutton.setText(_translate("Dialog", "Show results"))
             self.pushButton_2.setText(_translate("Dialog", "Start training"))
 
     #create the window
