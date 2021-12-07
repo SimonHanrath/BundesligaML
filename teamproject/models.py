@@ -24,7 +24,11 @@ class BaselineAlgo:
     """
 
     def __init__(self, df):
-        """Inits BaselineAlgo with the given Dataframe."""
+        """Inits BaselineAlgo with the given Dataframe
+
+        Args:
+            df: A pandas Dataframe containig the matches to consider for predictions
+        """
         self.df = df
 
     def predict_winner(self, home_team: str, guest_team: str)->list:
@@ -98,7 +102,11 @@ class PoissonRegression:
     """
 
     def __init__(self, df):
-        """Inits BaselineAlgo with needed dataframe and the poisson model on that dataframe."""
+        """Inits PoissonRegression with the given Dataframe
+
+        Args:
+            df: A pandas Dataframe containig the matches to consider for predictions
+        """
         self.goal_model_data = pd.concat([df[['homeClub','guestClub','homeScore']].assign(home=1).rename(
             columns={'homeClub':'team', 'guestClub':'opponent','homeScore':'goals'}),
            df[['guestClub','homeClub','guestScore']].assign(home=0).rename(
