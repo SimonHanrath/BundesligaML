@@ -2,13 +2,13 @@
 This module contains code to fetch required data from the internet and convert
 it to our internal format.
 """
-import json, os.path, requests, typing
+import json
+import os.path
+import requests
 import pandas as pd
 
-# ggf. weitere wichtige Daten: Liga; Ort; Tore (Spielminute, Torschütze,
-# Eigentor?, Strafe?, Verlängerung?); Wetter (von woanders)
 
-def get_data(startYear:int, startDay:int, endYear:int, endDay:int) -> pd.DataFrame:
+def get_data(startYear: int, startDay: int, endYear: int, endDay: int) -> pd.DataFrame:
     """Returns match data within a given interval.
 
     Args:
@@ -21,7 +21,7 @@ def get_data(startYear:int, startDay:int, endYear:int, endDay:int) -> pd.DataFra
         Match data (pd.DataFrame) in internal format
 
     Example:
-        df = get_data(2020,1, 2020,38)
+        df = get_data(2020, 1, 2020, 38)
     """
     dir = f"{os.path.dirname(os.path.abspath(__file__))}/crawled_data"
     filePath = f"{dir}/matches-{startYear}-{startDay}-{endYear}-{endDay}.json"
@@ -30,7 +30,7 @@ def get_data(startYear:int, startDay:int, endYear:int, endDay:int) -> pd.DataFra
     return pd.read_json(filePath)
 
 
-def api_query(param:str):
+def api_query(param: str):
     """Sends a request to openligadb.de and parses json response.
 
     Args:
@@ -52,7 +52,7 @@ def api_query(param:str):
     return data
 
 
-def parse_match(match:dict) -> dict:
+def parse_match(match: dict) -> dict:
     """Converts a match from openligadb.de format into internal format.
 
     Args:
@@ -64,10 +64,11 @@ def parse_match(match:dict) -> dict:
     goalMinsHome = []
     goalMinsGuest = []
     for g in match["goals"]:
-        if g["scoreTeam1"] != len(goalMinsHome):
-            goalMinsHome.append(g["matchMinute"])
-        elif g["scoreTeam2"] != len(goalMinsGuest):
-            goalMinsGuest.append(g["matchMinute"])
+        if g["matchMinute"] is not None:
+            if g["scoreTeam1"] != len(goalMinsHome):
+                goalMinsHome.append(g["matchMinute"])
+            elif g["scoreTeam2"] != len(goalMinsGuest):
+                goalMinsGuest.append(g["matchMinute"])
     return {
         "date": match["matchDateTime"],
         "homeClubId": match["team1"]["teamId"],
@@ -82,7 +83,7 @@ def parse_match(match:dict) -> dict:
     }
 
 
-def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int, file:str) -> None:
+def fetch_data(startYear: int, startDay: int, endYear: int, endDay: int, file: str) -> None:
     """Fetches all bundesliga matches within a given interval.
 
     Args:
@@ -96,19 +97,21 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int, file:str) -
         None
     """
     # preconditions: check validity of given time interval
-    assert startYear > 0 and endYear > 0, "Years must be greater than 0."
-    assert startYear <= endYear, "Invalid year interval."
-    assert startDay >= 0 and endDay >= 0, "Days must be positive integers."
-    assert (startYear < endYear or startDay < endDay), "Invalid day interval."
+    ### assert startYear > 0 and endYear > 0, "Years must be greater than 0."
+    ### assert startYear <= endYear, "Invalid year interval."
+    ### assert startDay >= 0 and endDay >= 0, "Days must be positive integers."
+    ### assert (startYear < endYear or startDay < endDay), "Invalid day interval."
     # matches is the resulting list of matches
     matches = []
     # crawl match data
     for year in range(startYear, endYear+1):
-        for division in ["bl1","bl2","bl3"]:
+        for division in ["bl1", "bl2", "bl3"]:
             # parse all finished matches within specified interval
             matchesFetched = api_query(f"getmatchdata/{division}/{year}")
-            matchesOfInterest = [parse_match(m) for m in matchesFetched
-                if (year < endYear or m["group"]["groupOrderID"] <= endDay) and m["matchIsFinished"]]
+            matchesOfInterest = [
+                parse_match(m)
+                for m in matchesFetched
+                if (year < endYear or m["group"]["groupOrderID"] <= endDay) and m["matchIsFinished"] and m["matchResults"]]
             matches += matchesOfInterest
     # save resulting list of matches as json file
     with open(file, "w") as f:
@@ -116,7 +119,7 @@ def fetch_data(startYear:int, startDay:int, endYear:int, endDay:int, file:str) -
     return None
 
 
-def avail_data(details:str = "all") -> list:
+def avail_data(details: str = "all") -> list:
     """Returns all bundesliga data available on openligadb.de.
 
     Args:
@@ -128,8 +131,9 @@ def avail_data(details:str = "all") -> list:
     """
     # get all available leagues of bundesliga
     fetchedLeagues = api_query("getavailableleagues")
-    availLeagues = [{"ID":l["leagueId"], "season":int(l["leagueSeason"]), "division":l["leagueShortcut"]}
-        for l in fetchedLeagues if l["leagueShortcut"] in ["bl1","bl2","bl3"]]
+    availLeagues = [
+        {"ID": l["leagueId"], "season": int(l["leagueSeason"]), "division": l["leagueShortcut"]}
+        for l in fetchedLeagues if l["leagueShortcut"] in ["bl1", "bl2", "bl3"]]
     # add available match days to leagues if desired
     if details == "all":
         for league in availLeagues:
