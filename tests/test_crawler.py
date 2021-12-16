@@ -2,6 +2,7 @@
 from teamproject import crawler
 import pandas as pd
 
+
 def test_get_data():
     lowerLimitYear = 2020
     upperLimitYear = 2020
@@ -22,5 +23,5 @@ def test_get_data():
     assert (data.homeClub != data.guestClub).all()
     assert (data.homeClubId != data.guestClubId).all()
     # check interval
-    assert (data.date >= pd.Timestamp(lowerLimitYear,1,1)).all()
-    assert (data.date <= pd.Timestamp(upperLimitYear+1,12,31)).all()
+    assert (data.date >= pd.Timestamp(lowerLimitYear, 1, 1)).all()
+    assert (data.date <= pd.Timestamp(upperLimitYear+1, 12, 31)).all()
