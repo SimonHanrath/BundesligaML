@@ -8,7 +8,9 @@ import json
 import os.path
 import requests
 import pandas as pd
-
+from ast import literal_eval
+from datetime import datetime
+from itertools import groupby
 
 def get_data(startYear: int, startDay: int, endYear: int, endDay: int,
              forceUpdate: bool = False) -> pd.DataFrame:
@@ -27,74 +29,48 @@ def get_data(startYear: int, startDay: int, endYear: int, endDay: int,
     Example:
         df = get_data(2020, 1, 2020, 38)
     """
-    dir = f"{os.path.dirname(os.path.abspath(__file__))}/crawled_data"
-    filePath = f"{dir}/matches-{startYear}-{startDay}-{endYear}-{endDay}.json"
-    if not os.path.exists(filePath):
-        fetch_data(startYear, startDay, endYear, endDay, filePath)
-    return pd.read_json(filePath)
+    avail = avail_data()
+    # filter out unavailable seasons
+    seasons = avail[avail['season'].isin(range(startYear, endYear + 1))]
+    # filter out cached seasons (if forceUpdate flag is not set)
+    fetch = seasons
+    if not forceUpdate:
+        fetch = fetch[~fetch['cached']]
+    fetch = fetch.explode('division')[['season', 'division']]
+    asyncio.run(fetch_data(fetch.to_dict('records')))
+    # read and concat match data from cache
+    frames = []
+    for season in seasons['season'].unique().tolist():
+        df = pd.read_csv(f'{cache_path()}/{season}.csv')
+        if season == startYear:
+            df = df[df['matchDay'] >= startDay]
+        if season == endYear:
+            df = df[df['matchDay'] <= endDay]
+        frames.append(df)
+    matches = pd.concat(frames) if frames else pd.DataFrame()
+    return matches
 
 
-def api_query(param: str):
-    """Sends a request to openligadb.de and parses json response.
-
-    Args:
-        param (str): Parameters in the request url [see api.openligadb.de]
-
-    Returns:
-        JSON data parsed to python list or dict
-
-    Examples:
-        api_query("getavailableleagues")
-        api_query("getavailablegroups/bl1/2020")
-        api_query("getmatchdata/bl1/2020")
-        api_query("getmatchdata/bl1/2020/8")
+async def fetch_data(leagues: list):
     """
-    assert len(param) > 0, "Specified parameter too short."
-    url = f"https://api.openligadb.de/{param}"
-    response = requests.get(url, headers={"Accept": "application/json"})
-    data = json.loads(response.text)
-    return data
-
-
-def parse_match(match: dict) -> dict:
-    """Converts a match from openligadb.de format into internal format.
-
-    Args:
-        match (dict): Detailed match data from openligadb
-
-    Returns:
-        match (dict): Reduced match data
     """
-    goalMinsHome = []
-    goalMinsGuest = []
-    for g in match["goals"]:
-        if g["matchMinute"] is not None:
-            if g["scoreTeam1"] != len(goalMinsHome):
-                goalMinsHome.append(g["matchMinute"])
-            elif g["scoreTeam2"] != len(goalMinsGuest):
-                goalMinsGuest.append(g["matchMinute"])
-    return {
-        "date": match["matchDateTime"],
-        "homeClubId": match["team1"]["teamId"],
-        "homeClub": match["team1"]["teamName"],
-        "guestClubId": match["team2"]["teamId"],
-        "guestClub": match["team2"]["teamName"],
-        "homeScore": match["matchResults"][0]["pointsTeam1"],
-        "guestScore": match["matchResults"][0]["pointsTeam2"],
-        "goalMinsHome": goalMinsHome,
-        "goalMinsGuest": goalMinsGuest,
-        "league": match["leagueShortcut"]
-    }
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for l in leagues:
+            tasks.append(asyncio.ensure_future(fetch_league(session, l['season'], l['division'])))
+        data = await asyncio.gather(*tasks)
+        for key, val in groupby(data, key=lambda d: d['season']):
+            frames = list(map(lambda d: parse_league(d['response']), val))
+            matchData = pd.concat(frames)
+            matchData.to_csv(f'{cache_path()}/{key}.csv', index=False)
+            # update avail_data cache
+            filePath = f'{cache_path()}/avail_data.csv'
+            avail = pd.read_csv(filePath)
+            avail.loc[avail['season'] == key, ['matchDays', 'cached', 'updated']] = [matchData['matchDay'].max(), True, str(datetime.now())]
+            avail.to_csv(filePath, index=False)
 
 
-async def _get_season(session, division: str, season: str):
-    url = f"https://api.openligadb.de/getmatchdata/{division}/{season}"
-    async with session.get(url, headers={"Accept": "application/json"}) as response:
-        data = await response.json()
-        return {"division": division, "season": season, "updated": "", "matchData": list(map(parse_match, ld))}
-
-
-async def fetch_data(leagues: pd.DataFrame) -> None:
+async def fetch_league(session, season, division) -> dict:
     """Fetches all bundesliga matches within a given interval.
 
     Args:
@@ -107,29 +83,35 @@ async def fetch_data(leagues: pd.DataFrame) -> None:
     Returns:
         None
     """
-    # preconditions: check validity of given time interval
-    ### assert startYear > 0 and endYear > 0, "Years must be greater than 0."
-    ### assert startYear <= endYear, "Invalid year interval."
-    ### assert startDay >= 0 and endDay >= 0, "Days must be positive integers."
-    ### assert (startYear < endYear or startDay < endDay), "Invalid day interval."
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for l in leagues:
-            for d in l["division"]:
-                tasks.append(asyncio.create_task(_get_season(session, d, l["season"])))
-        leagueData = await asyncio.gather(*tasks)
-        with open(f"{os.path.dirname(os.path.abspath(__file__))}/cache/matches.json", "w") as file:
-            json.dump(leagueData, file)
-    return None
+
+    url = f'https://api.openligadb.de/getmatchdata/{division}/{season}'
+    async with session.get(url) as resp:
+        print(f'Fetching {url}')
+        response = await resp.json()
+        return {'season': season, 'division': division, 'response': response}
 
 
-def avail_divisions() -> list:
-    """Returns all openligadb shortcuts of bundesliga leagues
+def parse_league(data: list) -> pd.DataFrame:
+    """Converts a match from openligadb.de format into internal format.
+
+    Args:
+        data (list): Detailed match data from openligadb
 
     Returns:
-        A list of strings (openligadb.de league shortcuts)
+        match (pd.DataFrame): Reduced match data
     """
-    return ["bl1", "bl2", "bl3"]
+    matches = pd.json_normalize(data)
+    matches = matches[matches['matchIsFinished'] & (len(matches['matchResults']) > 0)]
+    matches['homeScore'] = matches['matchResults'].apply(lambda l: l[0]['pointsTeam1'])
+    matches['guestScore'] = matches['matchResults'].apply(lambda l: l[0]['pointsTeam2'])
+    matches.rename({'matchDateTime': 'date', 'leagueSeason': 'season', 'leagueShortcut': 'division', 'matchDateTimeUTC': 'dateUTC', 'group.groupOrderID': 'matchDay', 'team1.teamId': 'homeID', 'team1.teamName': 'homeName', 'team1.teamIconUrl': 'homeIcon', 'team2.teamId': 'guestID', 'team2.teamName': 'guestName', 'team2.teamIconUrl': 'guestIcon', 'team2': 'guestTeam'}, axis=1, inplace=True)
+    if 'location.locationID' in matches.columns:
+        matches.rename({'location.locationID': 'locID', 'location.locationCity': 'locCity', 'location.locationStadium': 'locStadium'}, axis=1, inplace=True)
+        matches = matches.astype({'locID': 'Int64'})
+    else:
+        matches[['locID', 'locCity', 'locStadium']] = None
+    matches = matches[['season', 'division', 'date', 'dateUTC', 'matchDay', 'homeID', 'homeName', 'homeIcon', 'guestID', 'guestName', 'guestIcon', 'homeScore', 'guestScore', 'locID', 'locCity', 'locStadium']]
+    return matches
 
 
 def avail_data() -> pd.DataFrame:
@@ -138,20 +120,39 @@ def avail_data() -> pd.DataFrame:
     Returns:
         A pandas Dataframe covering all available league seasons and divisions
     """
-    #
-    # get all available leagues of bundesliga
-    fetchedLeagues = api_query("getavailableleagues")
-    availLeagues = [
-        {"ID": l["leagueId"], "season": int(l["leagueSeason"]), "division": l["leagueShortcut"]}
-        for l in fetchedLeagues if l["leagueShortcut"] in avail_divisions()]
-    # add available match days to leagues if desired
-    # if details == "all":
-    #     for league in availLeagues:
-    #         fetchedGroups = api_query(f"getavailablegroups/{league['division']}/{league['season']}")
-    #         league["matchdays"] = [g["groupOrderID"] for g in fetchedGroups]
-    df = pd.DataFrame(availLeagues).groupby('season').agg(list)
-    path = f"{os.path.dirname(os.path.abspath(__file__))}/cache/avail_data.csv"
-    df.to_csv(path, sep=',', encoding='utf-8')
-    return df
+    url = 'https://api.openligadb.de/getavailableleagues'
+    response = requests.get(url, headers={'Accept': 'application/json'})
+    data = json.loads(response.text)
+    leagues = [
+        {'IDs': l['leagueId'], 'season': int(l['leagueSeason']), 'division': l['leagueShortcut']}
+        for l in data if l['leagueShortcut'] in avail_divisions()]
+    leagues = list(filter(lambda l: l['season'] >= 2005, leagues))
+    avail = pd.DataFrame(leagues).sort_values(['season', 'division'])
+    avail = avail.groupby('season').agg(list)
+    avail.reset_index(level=0, inplace=True)
+    avail[['matchDays', 'cached', 'updated']] = [38, False, None]
+    filePath = f'{cache_path()}/avail_data.csv'
+    if os.path.exists(filePath):
+        cache = pd.read_csv(filePath)
+        cache['division'] = cache['division'].apply(literal_eval)
+        avail = pd.concat([avail[~avail.season.isin(cache.season)], cache])
+    avail.to_csv(filePath, index=False)
+    return avail
 
-x = avail_data()
+
+def avail_divisions() -> list:
+    """Returns all openligadb shortcuts of bundesliga leagues
+
+    Returns:
+        A list of strings (openligadb.de league shortcuts)
+    """
+    return ['bl1', 'bl2', 'bl3']
+
+
+def cache_path() -> str:
+    """Returns the absolute path of the cache directory
+
+    Returns:
+        A string containing the absolute path of the cache directory
+    """
+    return f'{os.path.dirname(os.path.abspath(__file__))}/cache'
