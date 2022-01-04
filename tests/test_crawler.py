@@ -6,7 +6,7 @@ def test_load_cache_index():
     # check types
     assert df['season'].dtype == 'int64'
     assert df['division'].dtype == 'object'
-    assert df['availMatchdays'].dtype == 'int64'
+    assert df['availMatchdays'].dtype == 'Int64'
     assert df['cached'].dtype == 'bool'
     assert df['cachedMatchdays'].dtype == 'int64'
     assert df['cachedDatetime'].dtype == 'datetime64[ns]'

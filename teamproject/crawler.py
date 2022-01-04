@@ -247,6 +247,7 @@ def load_cache_index(fetchIfEmpty: bool = True) -> pd.DataFrame:
     path = f'{g_cache_path}/index.csv'
     if os.path.exists(path):
         df = pd.read_csv(path, parse_dates=['cachedDatetime'])
+        df['availMatchdays'] = df['availMatchdays'].astype('Int64')
         df['division'] = df['division'].apply(literal_eval)
     elif fetchIfEmpty:
         fetch_avail_seasons()
