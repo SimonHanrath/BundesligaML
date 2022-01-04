@@ -11,9 +11,11 @@ from datetime import datetime
 from itertools import groupby
 
 
-g_cache_path = f'{os.path.dirname(os.path.abspath(__file__))}/cache'
 g_divisions = ['bl1', 'bl2', 'bl3']
 g_season_lower_limit = 2005
+g_cache_path = f'{os.path.dirname(os.path.abspath(__file__))}/cache'
+if not os.path.exists(g_cache_path):
+    os.mkdir(g_cache_path)
 
 
 def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
