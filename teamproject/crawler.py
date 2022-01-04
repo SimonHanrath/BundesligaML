@@ -261,7 +261,3 @@ def store_cache_index(data: pd.DataFrame):
         data (pd.DataFrame): A pd.DataFrame representing the cache index.
     """
     data.to_csv(f'{g_cache_path}/index.csv', index=False)
-
-
-fetch_avail_seasons()
-fetch_next_matches()
