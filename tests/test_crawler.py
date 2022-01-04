@@ -11,11 +11,10 @@ def test_load_cache_index():
     assert df['cached'].dtype == 'bool'
     assert df['cachedMatchdays'].dtype == 'int64'
     assert df['cachedDatetime'].dtype == 'datetime64[ns]'
-    # check data format
+    # check data format and correctness
     assert (df['season'] != '').all()
     assert (df['division'] != '').all()
     assert (df['availMatchdays'] > 0).all()
-    # check data correctness
     assert (~df['cached'] | (df['cachedMatchdays'] > 0)).all()
 
 
@@ -42,7 +41,7 @@ def test_get_data():
     assert df['locID'].dtype == 'Int64'
     assert df['locCity'].dtype == 'object'
     assert df['locStadium'].dtype == 'object'
-    # check data format
+    # check data format and correctness
     assert (df['season'] != '').all()
     assert (df['division'] != '').all()
     assert (df['matchday'] > 0).all()
@@ -52,7 +51,6 @@ def test_get_data():
     assert (df['guestIcon'] != '').all()
     assert (df['homeScore'] >= 0).all()
     assert (df['guestScore'] >= 0).all()
-    # check data correctness
     assert (df['homeID'] != df['guestID']).all()
     assert (df['homeName'] != df['guestName']).all()
     # check interval
