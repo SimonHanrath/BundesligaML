@@ -104,11 +104,10 @@ def fetch_avail_seasons():
     leagues = filter(lambda l: l['season'] >= g_season_lower_limit, leagues)
     avail = pd.DataFrame(leagues).sort_values(['season', 'division'])
     avail = avail.groupby('season').agg(list).reset_index()
-    avail[['availMatchdays', 'cached', 'cachedMatchdays', 'cachedDatetime']] = [None, False, None, None]
+    avail[['availMatchdays', 'cached', 'cachedMatchdays', 'cachedDatetime']] = [None, False, 0, None]
     cache = load_cache_index()
     if not cache.empty:
         avail = pd.concat([avail[~avail.season.isin(cache.season)], cache])
-    avail = avail.astype({'cachedMatchdays': 'Int64'})
     store_cache_index(avail)
 
 
@@ -196,9 +195,8 @@ def load_cache_index(fetchIfEmpty: bool = True) -> pd.DataFrame:
     """
     path = f'{g_cache_path}/index.csv'
     if os.path.exists(path):
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, parse_dates=['cachedDatetime'])
         df['division'] = df['division'].apply(literal_eval)
-        df = df.astype({'cachedMatchdays': 'Int64'})
     elif fetchIfEmpty:
         fetch_avail_seasons()
         df = load_cache_index()

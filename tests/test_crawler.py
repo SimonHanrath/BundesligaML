@@ -1,6 +1,22 @@
 # Use this file to test your crawler.
 from teamproject import crawler
-import pandas as pd
+
+
+def test_load_cache_index():
+    df = crawler.load_cache_index()
+    # check types
+    assert df['season'].dtype == 'int64'
+    assert df['division'].dtype == 'object'
+    assert df['availMatchdays'].dtype == 'int64'
+    assert df['cached'].dtype == 'bool'
+    assert df['cachedMatchdays'].dtype == 'int64'
+    assert df['cachedDatetime'].dtype == 'datetime64[ns]'
+    # check data format
+    assert (df['season'] != '').all()
+    assert (df['division'] != '').all()
+    assert (df['availMatchdays'] > 0).all()
+    # check data correctness
+    assert (~df['cached'] | (df['cachedMatchdays'] > 0)).all()
 
 
 def test_get_data():
@@ -36,6 +52,7 @@ def test_get_data():
     assert (df['guestIcon'] != '').all()
     assert (df['homeScore'] >= 0).all()
     assert (df['guestScore'] >= 0).all()
+    # check data correctness
     assert (df['homeID'] != df['guestID']).all()
     assert (df['homeName'] != df['guestName']).all()
     # check interval
