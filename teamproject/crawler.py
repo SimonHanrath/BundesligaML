@@ -149,7 +149,7 @@ def fetch_avail_seasons():
     avail = avail.groupby('season').agg(list).reset_index()
     cols = ['availMatchdays', 'cached', 'cachedMatchdays', 'cachedDatetime']
     avail[cols] = [None, False, 0, None]
-    cache = load_cache_index()
+    cache = load_cache_index(False)
     if not cache.empty:
         avail = pd.concat([avail[~avail.season.isin(cache.season)], cache])
     store_cache_index(avail)
@@ -248,7 +248,7 @@ def load_cache_index(fetchIfEmpty: bool = True) -> pd.DataFrame:
         df['division'] = df['division'].apply(literal_eval)
     elif fetchIfEmpty:
         fetch_avail_seasons()
-        df = load_cache_index()
+        df = load_cache_index(False)
     else:
         df = pd.DataFrame()
     return df
@@ -261,3 +261,7 @@ def store_cache_index(data: pd.DataFrame):
         data (pd.DataFrame): A pd.DataFrame representing the cache index.
     """
     data.to_csv(f'{g_cache_path}/index.csv', index=False)
+
+
+fetch_avail_seasons()
+fetch_next_matches()
