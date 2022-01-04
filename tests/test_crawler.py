@@ -1,4 +1,3 @@
-# Use this file to test your crawler.
 from teamproject import crawler
 
 
@@ -54,5 +53,7 @@ def test_get_data():
     assert (df['homeID'] != df['guestID']).all()
     assert (df['homeName'] != df['guestName']).all()
     # check interval
-    assert ((df['season'] >= fromSeason) | (df['matchday'] >= fromMatchday)).all()
-    assert ((df['season'] <= toSeason) | (df['matchday'] <= toMatchday)).all()
+    lowerLim = (df['season'] >= fromSeason) | (df['matchday'] >= fromMatchday)
+    upperLim = (df['season'] <= toSeason) | (df['matchday'] <= toMatchday)
+    assert (lowerLim).all()
+    assert (upperLim).all()
