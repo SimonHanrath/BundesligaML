@@ -1,29 +1,13 @@
-"""
-Add your GUI code here.
-
-
-from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication
-Form, Window = uic.loadUiType("teamproject/dialog.ui")
-
-app = QApplication([])
-window = Window()
-form = Form()
-form.setupUi(window)
-window.show()
-app.exec()
-"""
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
-import json
+
 from teamproject.models import BaselineAlgo
 from teamproject.models import PoissonRegression
 from teamproject.crawler import get_data
-import pandas as pd
 
+import pandas as pd
+import json
 
   
 
@@ -34,7 +18,11 @@ def main():
     
     # Add code here to create and initialize window.
     class Ui_Dialog(object):
+        
         def setupUi(self, Dialog):
+            """
+            Define all the Ui Elements in this method. 
+            """
             Dialog.setObjectName("Dialog")
             Dialog.resize(1055, 841) # Set the window size
 
@@ -46,17 +34,17 @@ def main():
             self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
             self.buttonBox.setObjectName("buttonBox")
 
-            #SelectStartTime label
+            #A label that tells you to select the start time, to change the text have a look at the retranslateUI funktion
             self.SelectStartTimeLabel = QtWidgets.QLabel(Dialog)
             self.SelectStartTimeLabel.setGeometry(QtCore.QRect(30, 80, 371, 31))
             self.SelectStartTimeLabel.setObjectName("SelectStartTimeLabel")
             
-            #SelectEndTime label
+            #A label that tells you to select the end time, to change the text have a look at the retranslateUI funktion
             self.SelectEndTimeLabel = QtWidgets.QLabel(Dialog)
             self.SelectEndTimeLabel.setGeometry(QtCore.QRect(450, 80, 371, 31))
             self.SelectEndTimeLabel.setObjectName("SelectEndTimeLabel")
 
-            #The combobox for the start year
+            #The combobox to select the start year, choose from 2001-2020
             self.StartYearcomboBox = QtWidgets.QComboBox(Dialog)
             self.StartYearcomboBox.setGeometry(QtCore.QRect(40, 150, 104, 87))
             self.StartYearcomboBox.setObjectName("StartYearcomboBox")
@@ -65,7 +53,7 @@ def main():
             for x in range(2002, 2020):
                 self.StartYearcomboBox.addItem(str(x))
 
-             #The combobox for the start day
+            #The combobox to select the start day, choose from 1-365
             self.StartDaycomboBox = QtWidgets.QComboBox(Dialog)
             self.StartDaycomboBox.setGeometry(QtCore.QRect(160, 150, 104, 87))
             self.StartDaycomboBox.setObjectName("StartDaycomboBox")
@@ -74,7 +62,7 @@ def main():
             for x in range(0,366):
                 self.StartDaycomboBox.addItem(str(x))
 
-            #The combobox for the end year
+            #The combobox to select the end year, choose from 2001-2020
             self.EndYearcomboBox = QtWidgets.QComboBox(Dialog)
             self.EndYearcomboBox.setGeometry(QtCore.QRect(450, 150, 104, 87))
             self.EndYearcomboBox.setObjectName("EndYearcomboBox")
@@ -83,7 +71,7 @@ def main():
             for x in range(2002, 2020):
                 self.EndYearcomboBox.addItem(str(x))
 
-             #The combobox for the end day
+             #The combobox to select the end day, choose from 1-365
             self.EndDaycomboBox = QtWidgets.QComboBox(Dialog)
             self.EndDaycomboBox.setGeometry(QtCore.QRect(570, 150, 104, 87))
             self.EndDaycomboBox.setObjectName("EndDaycomboBox")
@@ -93,28 +81,28 @@ def main():
                 self.EndDaycomboBox.addItem(str(x))
             
 
-            #Crawler Button
+            #Activate crawler Button
             self.crawlerbutton = QtWidgets.QPushButton(Dialog)
             self.crawlerbutton.setGeometry(QtCore.QRect(50, 250, 331, 101))
             self.crawlerbutton.setObjectName("Activate Crawler")
             self.crawlerbutton.clicked.connect(self.crawlercall)
 
-            #Select the teams label
+            #a label that tells you to select the team, to change the text have a look at the retranslateUI funktion
             self.SelectTeamLabel = QtWidgets.QLabel(Dialog)
             self.SelectTeamLabel.setGeometry(QtCore.QRect(30, 380, 371, 31))
             self.SelectTeamLabel.setObjectName("SelectTeamLabel")
 
-            #HomecomboBox for the home team
+            #the combobox to select the home team
             self.homecomboBox = QtWidgets.QComboBox(Dialog)
             self.homecomboBox.setGeometry(QtCore.QRect(60, 430, 301, 61))
             self.homecomboBox.setObjectName("homecomboBox")
             
-            #Guest Combobox for the guest team
+            #the combobox to select the guest team
             self.guestcomboBox = QtWidgets.QComboBox(Dialog)
             self.guestcomboBox.setGeometry(QtCore.QRect(570, 430, 301, 61))
             self.guestcomboBox.setObjectName("guestcomboBox")
             
-            #Select the Algo label
+            #Select the Algo label, to change the text have a look at the retranslateUI funktion
             self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
             self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 510, 371, 31))
             self.SelectAlgoLabel.setObjectName("SelectAlgoLabel")
@@ -126,19 +114,19 @@ def main():
             self.algocomboBox.addItem("Baseline Algorithm")
             self.algocomboBox.addItem("Poisson Regression Algorithm")
         
-            #Training button
+            #start training button
             self.trainingbutton = QtWidgets.QPushButton(Dialog)
             self.trainingbutton.setGeometry(QtCore.QRect(100, 660, 331, 101))
             self.trainingbutton.setObjectName("Start training")
             self.trainingbutton.clicked.connect(self.trainingcall)
             
-            #Result Button
+            #show Result Button
             self.resultsbutton = QtWidgets.QPushButton(Dialog)
             self.resultsbutton.setGeometry(QtCore.QRect(430, 660, 331, 101))
             self.resultsbutton.setObjectName("Show results")
             self.resultsbutton.clicked.connect(self.resultscall)
 
-            #Result label
+            #This label will show the results
             self.resultLabel = QtWidgets.QLabel(Dialog)
             self.resultLabel.setGeometry(QtCore.QRect(410, 780, 371, 31))
             self.resultLabel.setObjectName("resultLabel")
@@ -155,7 +143,13 @@ def main():
             QtCore.QMetaObject.connectSlotsByName(Dialog)
         
         def filterdata(self):
-            # this uses the get_data funktion out of the crawler.py to get the data in the time you chose in the comboboxes
+            """Gets the data between the chosen timeframe and filters it for the home team and guest team. Then it fills the combobox
+            for the home team and guest team with the teams names.  
+
+            Returns:
+                The pandas dataframe for the chosen timeframe
+            """
+            # this uses the get_data funktion out of the crawler.py to get the data in the time you choose in the comboboxes
             data = get_data(int(self.StartYearcomboBox.currentText()),int(self.StartDaycomboBox.currentText()), int(self.EndYearcomboBox.currentText()),int(self.EndDaycomboBox.currentText()))
             
             
@@ -177,16 +171,23 @@ def main():
                 self.homecomboBox.addItem(team[0])
             
             return data
+            
         #this will get called when you press the activate crawler button
         def crawlercall(self):
             
             #change text of the crawler button
             self.crawlerbutton.setText("Crawler finished collecting data")
             
+            #call the filterdata funktion to generate the data from the crawler
             self.filterdata()
         
-        #this funktion trains the algo with the crawled data.
         def trainAlgo(self):
+            """predicts the winner with the models.py algorithms. doesn't work automaticly yet
+
+             Returns:
+                a string, homeClub or guestClub, depending on the winner
+            """
+            #depending on the text in the combobox, the algorithm is choosen
             if self.algocomboBox.currentText() == "Baseline Algorithm":
                 model = BaselineAlgo(self.filterdata())
                 print("Baseline Algorithm")
@@ -198,9 +199,8 @@ def main():
             predictionlist = model.predict(str(self.homecomboBox.currentText()), str(self.guestcomboBox.currentText()))
     
             """
-            If winner[0] (which is the home win percentage) is higher then the winner[2] (which is the guest winner percentage), 
-            then display the home team in the button text. Else display the guest team. I will probably change this to 
-            a popup window at some point.
+            If predictionlist[0] (which is the home win percentage) is higher then the predictionlist[2] (which is the guest winner percentage), 
+            then set set the winner to "homeClub"
             """
             if predictionlist[0] > predictionlist[2]:
                 winner = "homeClub"
@@ -212,15 +212,17 @@ def main():
         #this will get called when you press the Start training button
         def trainingcall(self):
 
+            #train the algorithm and return the winner
             self.trainAlgo()
+            #set the buttons text
             self.trainingbutton.setText("Training finished")
 
-        #this will get called when you press the Show results button, I think i will do a popup with the winner.
+        #this will get called when you press the Show results button.
         def resultscall(self):
             
             winner = self.trainAlgo()
 
-            #predict the Winner out of the 2 teams chosen in the comboboxes
+            #Set the Result label text to the winner
             if winner == "homeClub":
                 self.resultLabel.setText("Results:  " + self.homecomboBox.currentText()+ " will win")
 
