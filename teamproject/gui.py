@@ -195,7 +195,7 @@ def main():
                 model = PoissonRegression(self.filterdata())
                 print("Poisson Regression Algorithm")
             
-            predictionlist = model.predict_winner(str(self.homecomboBox.currentText()), str(self.guestcomboBox.currentText()))
+            predictionlist = model.predict(str(self.homecomboBox.currentText()), str(self.guestcomboBox.currentText()))
     
             """
             If winner[0] (which is the home win percentage) is higher then the winner[2] (which is the guest winner percentage), 
