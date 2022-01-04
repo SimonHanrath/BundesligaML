@@ -1,0 +1,2 @@
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,finished,homeScore,guestScore,locID,locCity,locStadium
+2021,bl1,2022-01-07 20:30:00,2022-01-07 19:30:00+00:00,18,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,87,Borussia Mönchengladbach,https://i.imgur.com/KSIk0Eu.png,False,,,,,

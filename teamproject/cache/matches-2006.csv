@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2006,bl1,2006-08-11 20:45:00,2006-08-11 18:45:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,7,Borussia Dortmund,https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Borussia_Dortmund_logo.svg/560px-Borussia_Dortmund_logo.svg.png,2,0,,,
 2006,bl1,2006-08-12 15:30:00,2006-08-12 13:30:00+00:00,1,100,Hamburger SV,https://upload.wikimedia.org/wikipedia/commons/f/f7/Hamburger_SV_logo.svg,83,Arminia Bielefeld,https://upload.wikimedia.org/wikipedia/de/thumb/e/e5/Logo_Arminia_Bielefeld.svg/2000px-Logo_Arminia_Bielefeld.svg.png,1,1,,,
 2006,bl1,2006-08-12 15:30:00,2006-08-12 13:30:00+00:00,1,6,Bayer Leverkusen,https://upload.wikimedia.org/wikipedia/de/thumb/f/f7/Bayer_Leverkusen_Logo.svg/1200px-Bayer_Leverkusen_Logo.svg.png,23,Alemannia Aachen,https://upload.wikimedia.org/wikipedia/en/7/77/Alemannia_Aachen_logo.svg,3,0,,,

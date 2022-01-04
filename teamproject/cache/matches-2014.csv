@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2014,bl1,2014-08-22 20:30:00,2014-08-22 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,131,VfL Wolfsburg,https://i.imgur.com/ucqKV4B.png,2,1,34,München,Allianz Arena
 2014,bl1,2014-08-23 15:30:00,2014-08-23 13:30:00+00:00,1,175,TSG 1899 Hoffenheim,https://i.imgur.com/gF0PfEl.png,95,FC Augsburg,https://i.imgur.com/sdE62e2.png,2,0,188,Hoffenheim,Rhein-Neckar-Arena
 2014,bl1,2014-08-23 15:30:00,2014-08-23 13:30:00+00:00,1,55,Hannover 96,https://upload.wikimedia.org/wikipedia/commons/c/cd/Hannover_96_Logo.svg,9,FC Schalke 04,https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg,2,1,944,Hannover,HDI-Arena

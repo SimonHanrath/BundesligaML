@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2009,bl1,2009-08-07 20:30:00,2009-08-07 18:30:00+00:00,1,131,VfL Wolfsburg,https://i.imgur.com/ucqKV4B.png,16,VfB Stuttgart,https://i.imgur.com/v0tkpNx.png,2,0,20,Wolfsburg,Volkswagen Arena 
 2009,bl1,2009-08-08 15:30:00,2009-08-08 13:30:00+00:00,1,7,Borussia Dortmund,https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Borussia_Dortmund_logo.svg/560px-Borussia_Dortmund_logo.svg.png,65,1. FC Köln,https://upload.wikimedia.org/wikipedia/en/thumb/5/53/FC_Cologne_logo.svg/1200px-FC_Cologne_logo.svg.png,1,0,35,Dortmund,Signal Iduna Park
 2009,bl1,2009-08-08 15:30:00,2009-08-08 13:30:00+00:00,1,79,1. FC Nürnberg,https://upload.wikimedia.org/wikipedia/commons/f/fa/1._FC_Nürnberg_logo.svg,9,FC Schalke 04,https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg,1,2,21,Nürnberg,easyCredit Stadion

@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2011,bl1,2011-08-05 20:30:00,2011-08-05 18:30:00+00:00,1,7,Borussia Dortmund,https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Borussia_Dortmund_logo.svg/560px-Borussia_Dortmund_logo.svg.png,100,Hamburger SV,https://upload.wikimedia.org/wikipedia/commons/f/f7/Hamburger_SV_logo.svg,3,1,184,Dortmund,Signal-Iduna-Park
 2011,bl1,2011-08-06 15:30:00,2011-08-06 13:30:00+00:00,1,134,Werder Bremen,https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/SV-Werder-Bremen-Logo.svg/681px-SV-Werder-Bremen-Logo.svg.png,76,1. FC Kaiserslautern,https://upload.wikimedia.org/wikipedia/commons/d/d3/Logo_1_FC_Kaiserslautern.svg,2,0,36,Bremen,Weserstadion
 2011,bl1,2011-08-06 15:30:00,2011-08-06 13:30:00+00:00,1,16,VfB Stuttgart,https://i.imgur.com/v0tkpNx.png,9,FC Schalke 04,https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg,3,0,426,Stuttgart,Mercedes-Benz-Arena

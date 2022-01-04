@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2012,bl1,2012-08-24 20:30:00,2012-08-24 18:30:00+00:00,1,7,Borussia Dortmund,https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Borussia_Dortmund_logo.svg/560px-Borussia_Dortmund_logo.svg.png,134,Werder Bremen,https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/SV-Werder-Bremen-Logo.svg/681px-SV-Werder-Bremen-Logo.svg.png,2,1,52,,
 2012,bl1,2012-08-25 15:30:00,2012-08-25 13:30:00+00:00,1,87,Borussia Mönchengladbach,https://i.imgur.com/KSIk0Eu.png,175,TSG 1899 Hoffenheim,https://i.imgur.com/gF0PfEl.png,2,1,52,,
 2012,bl1,2012-08-25 15:30:00,2012-08-25 13:30:00+00:00,1,112,SC Freiburg,https://i.imgur.com/r3mvi0h.png,81,1. FSV Mainz 05,https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Logo_Mainz_05.svg/1200px-Logo_Mainz_05.svg.png,1,1,52,,

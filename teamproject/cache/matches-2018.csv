@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2018,bl1,2018-08-24 20:30:00,2018-08-24 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,175,TSG 1899 Hoffenheim,https://i.imgur.com/gF0PfEl.png,1,0,34,München,Allianz Arena
 2018,bl1,2018-08-25 15:30:00,2018-08-25 13:30:00+00:00,1,54,Hertha BSC,https://i.imgur.com/apFwbYZ.png,79,1. FC Nürnberg,https://upload.wikimedia.org/wikipedia/commons/f/fa/1._FC_Nürnberg_logo.svg,1,0,22,Berlin,Olympiastadion
 2018,bl1,2018-08-25 15:30:00,2018-08-25 13:30:00+00:00,1,134,Werder Bremen,https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/SV-Werder-Bremen-Logo.svg/681px-SV-Werder-Bremen-Logo.svg.png,55,Hannover 96,https://upload.wikimedia.org/wikipedia/commons/c/cd/Hannover_96_Logo.svg,0,0,36,Bremen,Weserstadion

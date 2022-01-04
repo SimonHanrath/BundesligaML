@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2007,bl1,2007-08-10 20:30:00,2007-08-10 18:30:00+00:00,1,16,VfB Stuttgart,https://i.imgur.com/v0tkpNx.png,9,FC Schalke 04,https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg,2,2,,,
 2007,bl1,2007-08-11 15:30:00,2007-08-11 13:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,102,FC Hansa Rostock,https://upload.wikimedia.org/wikipedia/commons/0/00/FC_Hansa_Logo_seit_2009.png,3,0,,,
 2007,bl1,2007-08-11 15:30:00,2007-08-11 13:30:00+00:00,1,6,Bayer Leverkusen,https://upload.wikimedia.org/wikipedia/de/thumb/f/f7/Bayer_Leverkusen_Logo.svg/1200px-Bayer_Leverkusen_Logo.svg.png,93,Energie Cottbus,https://upload.wikimedia.org/wikipedia/commons/5/55/Logo_Energie_Cottbus.svg,0,0,,,

@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2005,bl1,2005-08-05 20:30:00,2005-08-05 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,87,Borussia Mönchengladbach,https://i.imgur.com/KSIk0Eu.png,3,0,,,
 2005,bl1,2005-08-06 15:30:00,2005-08-06 13:30:00+00:00,1,65,1. FC Köln,https://upload.wikimedia.org/wikipedia/en/thumb/5/53/FC_Cologne_logo.svg/1200px-FC_Cologne_logo.svg.png,81,1. FSV Mainz 05,https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Logo_Mainz_05.svg/1200px-Logo_Mainz_05.svg.png,1,0,,,
 2005,bl1,2005-08-06 15:30:00,2005-08-06 13:30:00+00:00,1,107,MSV Duisburg,https://upload.wikimedia.org/wikipedia/en/c/c8/Msv_duisburg%28new%29.svg,16,VfB Stuttgart,https://i.imgur.com/v0tkpNx.png,1,1,,,

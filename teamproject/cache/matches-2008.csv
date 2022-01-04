@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2008,bl1,2008-08-15 20:30:00,2008-08-15 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,100,Hamburger SV,https://upload.wikimedia.org/wikipedia/commons/f/f7/Hamburger_SV_logo.svg,2,2,,,
 2008,bl1,2008-08-16 15:30:00,2008-08-16 13:30:00+00:00,1,9,FC Schalke 04,https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg,55,Hannover 96,https://upload.wikimedia.org/wikipedia/commons/c/cd/Hannover_96_Logo.svg,3,0,,,
 2008,bl1,2008-08-16 15:30:00,2008-08-16 13:30:00+00:00,1,131,VfL Wolfsburg,https://i.imgur.com/ucqKV4B.png,65,1. FC Köln,https://upload.wikimedia.org/wikipedia/en/thumb/5/53/FC_Cologne_logo.svg/1200px-FC_Cologne_logo.svg.png,2,1,,,

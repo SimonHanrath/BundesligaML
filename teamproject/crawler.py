@@ -4,15 +4,17 @@ it to our internal format.
 """
 import aiohttp
 import asyncio
-import json
 import os.path
-import requests
 import pandas as pd
 from ast import literal_eval
 from datetime import datetime
 from itertools import groupby
 
-cache_path = f'{os.path.dirname(os.path.abspath(__file__))}/cache'
+
+g_cache_path = f'{os.path.dirname(os.path.abspath(__file__))}/cache'
+g_divisions = ['bl1', 'bl2', 'bl3']
+g_season_lower_limit = 2005
+
 
 def get_data(fromSeason: int, fromMatchDay: int, toSeason: int, toMatchDay: int,
              forceUpdate: bool = False) -> pd.DataFrame:
@@ -23,70 +25,38 @@ def get_data(fromSeason: int, fromMatchDay: int, toSeason: int, toMatchDay: int,
         fromMatchDay (int): Day of lower interval limit
         toSeason (int): Year of upper interval limit
         toMatchDay (int): Day of upper interval limit
-        forceUpdate (bool): TO-DO
+        forceUpdate (bool): Force re-caching of seasons within interval
 
     Returns:
-        Match data (pd.DataFrame) in internal format
+        Match data as pd.DataFrame (or empty pd.DataFrame)
 
     Example:
         df = get_data(2020, 1, 2020, 38)
     """
-    avail = avail_data()
-    # filter out unavailable seasons
-    seasons = avail[avail['season'].isin(range(fromSeason, toSeason + 1))]
-    # filter out cached seasons (if forceUpdate flag is not set)
-    fetch = seasons
+    avail = load_cache_index()
+    # filter out unavailable and cached seasons
+    seasons = avail[avail['season'].isin(range(fromSeason, toSeason + 1))].copy()
+    seasonList = seasons['season'].unique().tolist()
     if not forceUpdate:
-        fetch = fetch[~fetch['cached']]
-    fetch = fetch.explode('division')[['season', 'division']]
-    asyncio.run(fetch_data(fetch.to_dict('records')))
-    # read and concat match data from cache
+        seasons = seasons[~seasons['cached']]
+    # fetch data if necessary
+    seasons['action'] = 'getmatchdata'
+    leagues = seasons.explode('division')[['action', 'division', 'season']]
+    responses = asyncio.run(fetch_queries(leagues.to_dict('records')))
+    for key, val in groupby(responses, key=lambda d: d['params']['season']):
+        frames = map(lambda d: parse_league(d['response']), val)
+        store_season(key, pd.concat(frames))
+    # assemble interval from cache
     frames = []
-    for season in seasons['season'].unique().tolist():
-        df = pd.read_csv(f'{cache_path}/{season}.csv', parse_dates=['dateTime', 'dateTimeUTC'])
+    for season in seasonList:
+        df = pd.read_csv(f'{g_cache_path}/matches-{season}.csv', parse_dates=['datetime', 'datetimeUTC'])
         if season == fromSeason:
-            df = df[df['matchDay'] >= fromMatchDay]
+            df = df[df['matchday'] >= fromMatchDay]
         if season == toSeason:
-            df = df[df['matchDay'] <= toMatchDay]
+            df = df[df['matchday'] <= toMatchDay]
         frames.append(df)
     matchData = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
     return matchData
-
-
-async def fetch_data(leagues: list):
-    """
-    """
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for l in leagues:
-            params = {'division': l['division'], 'season': l['season']}
-            tasks.append(asyncio.ensure_future(fetch_query(session, params)))
-        data = await asyncio.gather(*tasks)
-        for key, val in groupby(data, key=lambda d: d['params']['season']):
-            frames = map(lambda d: parse_league(d['response']), val)
-            matchData = pd.concat(frames)
-            matchData.to_csv(f'{cache_path}/{key}.csv', index=False)
-            # update avail_data cache
-            filePath = f'{cache_path}/avail_data.csv'
-            avail = pd.read_csv(filePath)
-            avail.loc[avail['season'] == key, ['matchDays', 'cached', 'lastUpdate']] = [matchData['matchDay'].max(), True, str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))]
-            avail.to_csv(filePath, index=False)
-
-
-async def fetch_query(session, params) -> dict:
-    """Fetches all bundesliga matches within a given interval.
-
-    Args:
-
-    Returns:
-        None
-    """
-    paramStr = '/'.join(map(str, params.values()))
-    url = f'https://api.openligadb.de/getmatchdata/{paramStr}'
-    async with session.get(url) as resp:
-        print(f'Fetching {url}')
-        response = await resp.json()
-        return {'params': params, 'response': response}
 
 
 def parse_league(data: list) -> pd.DataFrame:
@@ -99,51 +69,120 @@ def parse_league(data: list) -> pd.DataFrame:
         match (pd.DataFrame): Reduced match data
     """
     matches = pd.json_normalize(data)
-    matches = matches[matches['matchIsFinished'] & (len(matches['matchResults']) > 0)]
-    matches['homeScore'] = matches['matchResults'].apply(lambda l: l[0]['pointsTeam1'])
-    matches['guestScore'] = matches['matchResults'].apply(lambda l: l[0]['pointsTeam2'])
-    matches.rename({'matchDateTime': 'dateTime', 'leagueSeason': 'season', 'leagueShortcut': 'division', 'matchDateTimeUTC': 'dateTimeUTC', 'group.groupOrderID': 'matchDay', 'team1.teamId': 'homeID', 'team1.teamName': 'homeName', 'team1.teamIconUrl': 'homeIcon', 'team2.teamId': 'guestID', 'team2.teamName': 'guestName', 'team2.teamIconUrl': 'guestIcon', 'team2': 'guestTeam'}, axis=1, inplace=True)
-    matches['dateTime'] = pd.to_datetime(matches['dateTime'])
-    matches['dateTimeUTC'] = pd.to_datetime(matches['dateTimeUTC'])
+    matches['homeScore'] = matches['matchResults'].apply(lambda l: l[0]['pointsTeam1'] if l else None).astype('Int64')
+    matches['guestScore'] = matches['matchResults'].apply(lambda l: l[0]['pointsTeam2'] if l else None).astype('Int64')
+    matches.rename({'matchDateTime': 'datetime', 'leagueSeason': 'season', 'leagueShortcut': 'division', 'matchDateTimeUTC': 'datetimeUTC', 'matchIsFinished': 'finished', 'group.groupOrderID': 'matchday', 'team1.teamId': 'homeID', 'team1.teamName': 'homeName', 'team1.teamIconUrl': 'homeIcon', 'team2.teamId': 'guestID', 'team2.teamName': 'guestName', 'team2.teamIconUrl': 'guestIcon', 'team2': 'guestTeam'}, axis=1, inplace=True)
+    matches['datetime'] = pd.to_datetime(matches['datetime'])
+    matches['datetimeUTC'] = pd.to_datetime(matches['datetimeUTC'])
     if 'location.locationID' in matches.columns:
         matches.rename({'location.locationID': 'locID', 'location.locationCity': 'locCity', 'location.locationStadium': 'locStadium'}, axis=1, inplace=True)
         matches = matches.astype({'locID': 'Int64'})
     else:
         matches[['locID', 'locCity', 'locStadium']] = None
-    matches = matches[['season', 'division', 'dateTime', 'dateTimeUTC', 'matchDay', 'homeID', 'homeName', 'homeIcon', 'guestID', 'guestName', 'guestIcon', 'homeScore', 'guestScore', 'locID', 'locCity', 'locStadium']]
+    matches = matches[['season', 'division', 'datetime', 'datetimeUTC', 'matchday', 'homeID', 'homeName', 'homeIcon', 'guestID', 'guestName', 'guestIcon', 'finished', 'homeScore', 'guestScore', 'locID', 'locCity', 'locStadium']]
     return matches
 
 
-def avail_data() -> pd.DataFrame:
-    """Returns all bundesliga data available on openligadb.de.
-
-    Returns:
-        A pandas Dataframe covering all available league seasons and divisions
+def store_season(season: int, matches: pd.DataFrame):
     """
-    url = 'https://api.openligadb.de/getavailableleagues'
-    response = requests.get(url, headers={'Accept': 'application/json'})
-    data = json.loads(response.text)
-    leagues = [
-        {'IDs': l['leagueId'], 'season': int(l['leagueSeason']), 'division': l['leagueShortcut']}
-        for l in data if l['leagueShortcut'] in avail_divisions()]
-    leagues = filter(lambda l: l['season'] >= 2005, leagues)
+    """
+    matches.reset_index(inplace=True)
+    matches.drop(matches[~matches['finished']].index, axis=0, inplace=True)
+    matches.drop('finished', axis=1, inplace=True)
+    matches.to_csv(f'{g_cache_path}/matches-{season}.csv', index=False)
+    avail = load_cache_index()
+    avail.loc[avail['season'] == season, ['cachedMatchdays', 'cached', 'cachedDatetime']] = [matches['matchday'].max(), True, str(datetime.now())]
+    avail.to_csv(f'{g_cache_path}/index.csv', index=False)
+
+
+def fetch_avail_leagues() -> pd.DataFrame:
+    """
+    """
+    responses = asyncio.run(fetch_queries([{'action': 'getavailableleagues'}]))
+    leagues = [{'IDs': l['leagueId'], 'season': int(l['leagueSeason']), 'division': l['leagueShortcut']} for l in responses[0]['response'] if l['leagueShortcut'] in g_divisions]
+    leagues = filter(lambda l: l['season'] >= g_season_lower_limit, leagues)
     avail = pd.DataFrame(leagues).sort_values(['season', 'division'])
-    avail = avail.groupby('season').agg(list)
-    avail.reset_index(level=0, inplace=True)
-    avail[['matchDays', 'cached', 'lastUpdate']] = [38, False, None]
-    filePath = f'{cache_path}/avail_data.csv'
-    if os.path.exists(filePath):
-        cache = pd.read_csv(filePath)
-        cache['division'] = cache['division'].apply(literal_eval)
+    avail = avail.groupby('season').agg(list).reset_index()
+    avail[['availMatchdays', 'cached', 'cachedMatchdays', 'cachedDatetime']] = [None, False, None, None]
+    cache = load_cache_index()
+    if not cache.empty:
         avail = pd.concat([avail[~avail.season.isin(cache.season)], cache])
-    avail.to_csv(filePath, index=False)
+    avail = avail.astype({'cachedMatchdays': 'Int64'})
+    avail.to_csv(f'{g_cache_path}/index.csv', index=False)
     return avail
 
 
-def avail_divisions() -> list:
-    """Returns all openligadb shortcuts of bundesliga leagues
+def fetch_avail_match_days():
+    """
+    """
+    avail = load_cache_index()
+    leagues = avail.explode('division')
+    leagues = leagues[['division', 'season']]
+    leagues.insert(0, 'action', 'getavailablegroups')
+    queries = leagues.to_dict('records')
+    responses = asyncio.run(fetch_queries(queries))
+    data = [{'season': l['params']['season'], 'availMatchdays': max(l['response'], key=lambda x:x['groupOrderID'])['groupOrderID']} for l in responses]
+    df = pd.DataFrame(data).groupby('season').agg(max)
+    df['availMatchdays'] = df['availMatchdays'].astype('Int64')
+    avail.set_index('season', inplace=True)
+    avail.update(df)
+    avail.to_csv(f'{g_cache_path}/index.csv')
+
+
+def fetch_next_matches():
+    """
+    """
+    avail = load_cache_index()
+    current = avail.explode('division')
+    current = current[['division', 'season']]
+    currentSeason = current['season'].max()
+    current = current[current['season'] == currentSeason]
+    current.insert(0, 'action', 'getmatchdata')
+    queries = current.to_dict('records')
+    responses = asyncio.run(fetch_queries(queries))
+    df = pd.concat(map(lambda d: parse_league(d['response']), responses))
+    store_season(currentSeason, df.copy())
+    df = df[df['datetimeUTC'] >= pd.Timestamp.utcnow()]
+    df = df[df['datetimeUTC'] == df['datetimeUTC'].min()]
+    df.to_csv(f'{g_cache_path}/next_matches.csv', index=False)
+
+
+async def fetch_queries(queries: list) -> list:
+    """
+    """
+    async with aiohttp.ClientSession() as session:
+        tasks = map(lambda params: asyncio.ensure_future(query(session, params)), queries)
+        responses = await asyncio.gather(*tasks)
+        return responses
+
+
+async def query(session, params: dict) -> dict:
+    """Fetches all bundesliga matches within a given interval.
+
+    Args:
 
     Returns:
-        A list of strings (openligadb.de league shortcuts)
+        None
     """
-    return ['bl1', 'bl2', 'bl3']
+    paramStr = '/'.join(map(str, params.values()))
+    url = f'https://api.openligadb.de/{paramStr}'
+    async with session.get(url) as resp:
+        # print(f'Fetching {url}')
+        response = await resp.json()
+        return {'params': params, 'response': response}
+
+
+def load_cache_index(fetchIfEmpty: bool = True) -> pd.DataFrame:
+    """
+    """
+    path = f'{g_cache_path}/index.csv'
+    if os.path.exists(path):
+        df = pd.read_csv(path)
+        df['division'] = df['division'].apply(literal_eval)
+        df = df.astype({'cachedMatchdays': 'Int64'})
+    elif fetchIfEmpty:
+        fetch_avail_leagues()
+        df = load_cache_index()
+    else:
+        df = pd.DataFrame()
+    return df

@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2019,bl1,2019-08-16 20:30:00,2019-08-16 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,54,Hertha BSC,https://i.imgur.com/apFwbYZ.png,1,2,491,München,Alianz Arena
 2019,bl1,2019-08-17 15:30:00,2019-08-17 13:30:00+00:00,1,7,Borussia Dortmund,https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Borussia_Dortmund_logo.svg/560px-Borussia_Dortmund_logo.svg.png,95,FC Augsburg,https://i.imgur.com/sdE62e2.png,1,1,,,
 2019,bl1,2019-08-17 15:30:00,2019-08-17 13:30:00+00:00,1,6,Bayer Leverkusen,https://upload.wikimedia.org/wikipedia/de/thumb/f/f7/Bayer_Leverkusen_Logo.svg/1200px-Bayer_Leverkusen_Logo.svg.png,31,SC Paderborn 07,https://upload.wikimedia.org/wikipedia/commons/e/e3/SC_Paderborn_07_Logo.svg,2,2,,,

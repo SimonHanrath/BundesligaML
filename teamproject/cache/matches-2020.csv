@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2020,bl1,2020-09-18 20:30:00,2020-09-18 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,9,FC Schalke 04,https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg,8,0,34,München,Allianz Arena
 2020,bl1,2020-09-19 15:30:00,2020-09-19 13:30:00+00:00,1,91,Eintracht Frankfurt,https://i.imgur.com/X8NFkOb.png,83,Arminia Bielefeld,https://upload.wikimedia.org/wikipedia/de/thumb/e/e5/Logo_Arminia_Bielefeld.svg/2000px-Logo_Arminia_Bielefeld.svg.png,1,1,442,Frankfurt,Commerzbank-Arema
 2020,bl1,2020-09-19 15:30:00,2020-09-19 13:30:00+00:00,1,65,1. FC Köln,https://upload.wikimedia.org/wikipedia/en/thumb/5/53/FC_Cologne_logo.svg/1200px-FC_Cologne_logo.svg.png,175,TSG 1899 Hoffenheim,https://i.imgur.com/gF0PfEl.png,2,3,31,Köln,Rhein Energie Stadion 

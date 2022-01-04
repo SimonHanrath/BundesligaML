@@ -1,4 +1,4 @@
-season,division,dateTime,dateTimeUTC,matchDay,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
+season,division,datetime,datetimeUTC,matchday,homeID,homeName,homeIcon,guestID,guestName,guestIcon,homeScore,guestScore,locID,locCity,locStadium
 2015,bl1,2015-08-14 20:30:00,2015-08-14 18:30:00+00:00,1,40,FC Bayern München,https://i.imgur.com/jJEsJrj.png,100,Hamburger SV,https://upload.wikimedia.org/wikipedia/commons/f/f7/Hamburger_SV_logo.svg,1,0,178,München,Allianz-Arena
 2015,bl1,2015-08-15 15:30:00,2015-08-15 13:30:00+00:00,1,118,SV Darmstadt 98,https://upload.wikimedia.org/wikipedia/commons/e/e5/SV_Darmstadt_98_Logo.svg,55,Hannover 96,https://upload.wikimedia.org/wikipedia/commons/c/cd/Hannover_96_Logo.svg,1,0,441,Darmstadt,Stadion am Böllenfalltor
 2015,bl1,2015-08-15 15:30:00,2015-08-15 13:30:00+00:00,1,81,1. FSV Mainz 05,https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Logo_Mainz_05.svg/1200px-Logo_Mainz_05.svg.png,171,FC Ingolstadt 04,https://upload.wikimedia.org/wikipedia/de/thumb/5/55/FC-Ingolstadt_logo.svg/125px-FC-Ingolstadt_logo.svg.png,0,0,186,Mainz,Stadion am Bruchweg
