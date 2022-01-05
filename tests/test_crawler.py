@@ -1,20 +1,54 @@
+import pandas as pd
 from teamproject import crawler
 
 
+# test fetching and caching of available data
 def test_load_cache_index():
-    df = crawler.load_cache_index()
+    crawler.fetch_avail_seasons()
+    crawler.fetch_avail_matchdays()
+    data = crawler.load_cache_index()
     # check types
-    assert df['season'].dtype == 'int64'
-    assert df['division'].dtype == 'object'
-    assert df['availMatchdays'].dtype == 'Int64'
-    assert df['cached'].dtype == 'bool'
-    assert df['cachedMatchdays'].dtype == 'int64'
-    assert df['cachedDatetime'].dtype == 'datetime64[ns]'
+    assert data['cached'].dtype == 'bool'
+    assert data['division'].dtype == 'object'
+    assert pd.api.types.is_integer_dtype(data['season'])
+    assert pd.api.types.is_integer_dtype(data['availMatchdays'])
+    assert pd.api.types.is_integer_dtype(data['cachedMatchdays'])
+    assert pd.api.types.is_datetime64_any_dtype(data['cachedDatetime'])
     # check data format and correctness
-    assert (df['season'] != '').all()
-    assert (df['division'] != '').all()
-    assert (df['availMatchdays'] > 0).all()
-    assert (~df['cached'] | (df['cachedMatchdays'] > 0)).all()
+    assert (data['season'] != '').all()
+    assert (data['division'] != '').all()
+    assert (data['availMatchdays'] > 0).all()
+    assert (~data['cached'] | (data['cachedMatchdays'] > 0)).all()
+
+
+# test fetching and caching of next matches
+def test_load_matchdata():
+    crawler.fetch_next_matches()
+    data = crawler.load_matchdata('next')
+    # check types
+    assert data['division'].dtype == 'object'
+    assert data['homeName'].dtype == 'object'
+    assert data['homeIcon'].dtype == 'object'
+    assert data['guestName'].dtype == 'object'
+    assert data['guestIcon'].dtype == 'object'
+    assert pd.api.types.is_integer_dtype(data['season'])
+    assert pd.api.types.is_integer_dtype(data['matchday'])
+    assert pd.api.types.is_integer_dtype(data['homeID'])
+    assert pd.api.types.is_integer_dtype(data['guestID'])
+    assert pd.api.types.is_integer_dtype(data['locID'])
+    assert pd.api.types.is_datetime64_any_dtype(data['datetime'])
+    assert pd.api.types.is_datetime64_any_dtype(data['datetimeUTC'])
+    # check data format and correctness
+    assert (data['season'] != '').all()
+    assert (data['division'] != '').all()
+    assert (data['matchday'] > 0).all()
+    assert (data['homeName'] != '').all()
+    assert (data['homeIcon'] != '').all()
+    assert (data['guestName'] != '').all()
+    assert (data['guestIcon'] != '').all()
+    assert (data['homeID'] != data['guestID']).all()
+    assert (data['homeName'] != data['guestName']).all()
+    assert (data['datetimeUTC'] > pd.Timestamp.utcnow()).all()
 
 
 def test_get_data():
@@ -22,38 +56,37 @@ def test_get_data():
     fromMatchday = 1
     toSeason = 2020
     toMatchday = 20
-    df = crawler.get_data(fromSeason, fromMatchday, toSeason, toMatchday)
+    data = crawler.get_data(fromSeason, fromMatchday, toSeason, toMatchday)
     # check types
-    assert df['season'].dtype == 'int64'
-    assert df['division'].dtype == 'object'
-    assert df['datetime'].dtype == 'datetime64[ns]'
-    assert df['datetimeUTC'].dtype == 'datetime64[ns, UTC]'
-    assert df['matchday'].dtype == 'int64'
-    assert df['homeID'].dtype == 'int64'
-    assert df['homeName'].dtype == 'object'
-    assert df['homeIcon'].dtype == 'object'
-    assert df['guestID'].dtype == 'int64'
-    assert df['guestName'].dtype == 'object'
-    assert df['guestIcon'].dtype == 'object'
-    assert df['homeScore'].dtype == 'int64'
-    assert df['guestScore'].dtype == 'int64'
-    assert df['locID'].dtype == 'Int64'
-    assert df['locCity'].dtype == 'object'
-    assert df['locStadium'].dtype == 'object'
+    assert data['division'].dtype == 'object'
+    assert data['homeName'].dtype == 'object'
+    assert data['homeIcon'].dtype == 'object'
+    assert data['guestName'].dtype == 'object'
+    assert data['guestIcon'].dtype == 'object'
+    assert data['locCity'].dtype == 'object'
+    assert data['locStadium'].dtype == 'object'
+    assert pd.api.types.is_integer_dtype(data['season'])
+    assert pd.api.types.is_integer_dtype(data['matchday'])
+    assert pd.api.types.is_integer_dtype(data['homeID'])
+    assert pd.api.types.is_integer_dtype(data['guestID'])
+    assert pd.api.types.is_integer_dtype(data['homeScore'])
+    assert pd.api.types.is_integer_dtype(data['guestScore'])
+    assert pd.api.types.is_integer_dtype(data['locID'])
+    assert pd.api.types.is_datetime64_any_dtype(data['datetime'])
+    assert pd.api.types.is_datetime64_any_dtype(data['datetimeUTC'])
     # check data format and correctness
-    assert (df['season'] != '').all()
-    assert (df['division'] != '').all()
-    assert (df['matchday'] > 0).all()
-    assert (df['homeName'] != '').all()
-    assert (df['homeIcon'] != '').all()
-    assert (df['guestName'] != '').all()
-    assert (df['guestIcon'] != '').all()
-    assert (df['homeScore'] >= 0).all()
-    assert (df['guestScore'] >= 0).all()
-    assert (df['homeID'] != df['guestID']).all()
-    assert (df['homeName'] != df['guestName']).all()
-    # check interval
-    lowerLim = (df['season'] >= fromSeason) | (df['matchday'] >= fromMatchday)
-    upperLim = (df['season'] <= toSeason) | (df['matchday'] <= toMatchday)
-    assert (lowerLim).all()
-    assert (upperLim).all()
+    assert (data['season'] != '').all()
+    assert (data['division'] != '').all()
+    assert (data['matchday'] > 0).all()
+    assert (data['homeName'] != '').all()
+    assert (data['homeIcon'] != '').all()
+    assert (data['guestName'] != '').all()
+    assert (data['guestIcon'] != '').all()
+    assert (data['homeScore'] >= 0).all()
+    assert (data['guestScore'] >= 0).all()
+    assert (data['homeID'] != data['guestID']).all()
+    assert (data['homeName'] != data['guestName']).all()
+    assert (data['datetimeUTC'] < pd.Timestamp.utcnow()).all()
+    lower = (data['season'] > fromSeason) | (data['matchday'] >= fromMatchday)
+    upper = (data['season'] < toSeason) | (data['matchday'] <= toMatchday)
+    assert (lower & upper).all()
