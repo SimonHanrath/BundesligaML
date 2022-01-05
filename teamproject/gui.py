@@ -203,9 +203,9 @@ def main():
             then set set the winner to "homeClub"
             """
             if predictionlist[0] > predictionlist[2]:
-                winner = "homeName"
+                winner = "homeClub"
             else:
-                winner = "guestName"
+                winner = "guestClub"
 
             return winner
 
