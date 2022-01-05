@@ -23,11 +23,12 @@ def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
     """Returns match data within a given interval.
 
     Args:
-        fromSeason (int): Season of lower interval limit
-        fromMatchday (int): Day of lower interval limit
-        toSeason (int): Season of upper interval limit
-        toMatchday (int): Day of upper interval limit
-        forceUpdate (bool): Force re-caching of seasons in interval
+        fromSeason (int): Season of lower interval limit.
+        fromMatchday (int): Day of lower interval limit.
+        toSeason (int): Season of upper interval limit.
+        toMatchday (int): Day of upper interval limit.
+        forceUpdate (bool): Force re-caching of seasons in interval. Defaults
+                            to False.
 
     Returns:
         Match data as pd.DataFrame (can be empty)
@@ -47,7 +48,6 @@ def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
         store_season(key, pd.concat(frames))
     # assemble interval from cache
     frames = []
-    matchData = pd.DataFrame()
     for season in seasonList:
         path = f'{g_cache_path}/matches_{season}.csv'
         df = pd.read_csv(path, parse_dates=['datetime', 'datetimeUTC'])
@@ -57,8 +57,8 @@ def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
         if season == toSeason:
             df = df[df['matchday'] <= toMatchday]
         frames.append(df)
-    matchData = pd.concat(frames, ignore_index=True)
-    return matchData
+    intvDF = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    return intvDF
 
 
 def parse_league(data: list) -> pd.DataFrame:
@@ -238,7 +238,7 @@ def load_cache_index(fetchIfEmpty: bool = True) -> pd.DataFrame:
 
     Args:
         fetchIfEmpty (bool): Determines if available seasons should be fetched
-                             if the local cache is empty.
+                             if the local cache is empty. Defaults to True.
 
     Returns:
         A pd.DataFrame representing the content of the cache index (might be

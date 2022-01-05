@@ -32,22 +32,22 @@ class BaselineAlgo:
         self.df = df
 
     def predict(self, homeTeam: str, guestTeam: str)->list:
-        """Predicts the winner between homeTeam and guestTeam based on 
+        """Predicts the winner between homeTeam and guestTeam based on
            past matches between them
 
         Args:
-            homeTeam (str): Name of the home team 
+            homeTeam (str): Name of the home team
             guestTeam (str): Name of the guest team
 
         Returns:
-            A list containig the probabilties for the homeTeam winning, a draw 
+            A list containig the probabilties for the homeTeam winning, a draw
             and the guestTeam winning in that order
         """
         df = self.df
 
         # get matches between the two given teams
-        team1 = df.homeClub.values
-        team2 = df.guestClub.values
+        team1 = df.homeName.values
+        team2 = df.guestName.values
 
         matches = df[((team1 == homeTeam) & (team2 == guestTeam)) |
                      ((team1 == guestTeam) & (team2 == homeTeam))]
@@ -65,17 +65,17 @@ class BaselineAlgo:
             return [winsHomeTeamTotal / len(df), drawsTotal / len(df), winsGuestTeamTotal / len(df)]
 
         # if matches exist: collect results in matches between them
-        homeClub = matches.homeClub.values
-        guestClub = matches.guestClub.values
+        homeName = matches.homeName.values
+        guestName = matches.guestName.values
 
         homeScore = matches.homeScore.values
         guestScore = matches.guestScore.values
 
-        winsHomeTeam = np.sum((homeScore > guestScore) & (homeClub == homeTeam) |
-                                (homeScore < guestScore) & (guestClub == homeTeam))
+        winsHomeTeam = np.sum((homeScore > guestScore) & (homeName == homeTeam) |
+                                (homeScore < guestScore) & (guestName == homeTeam))
 
-        winsGuestTeam = np.sum((homeScore > guestScore) & (homeClub == guestTeam) |
-                                 (homeScore < guestScore) & (guestClub == guestTeam))
+        winsGuestTeam = np.sum((homeScore > guestScore) & (homeName == guestTeam) |
+                                 (homeScore < guestScore) & (guestName == guestTeam))
 
         draws = np.sum(matches['homeScore'] == matches['guestScore'])
 
@@ -109,27 +109,27 @@ class PoissonRegression:
         """
         self.df = df
 
-        self.teams = np.unique(self.df['guestClub'])
+        self.teams = np.unique(self.df['guestName'])
 
-        self.goalModelData = pd.concat([df[['homeClub', 'guestClub', 'homeScore']].assign(home=1).rename(
-            columns={'homeClub': 'team', 'guestClub': 'opponent', 'homeScore': 'goals'}),
-            df[['guestClub', 'homeClub', 'guestScore']].assign(home=0).rename(
-                columns={'guestClub': 'team', 'homeClub': 'opponent', 'guestScore': 'goals'})])
+        self.goalModelData = pd.concat([df[['homeName', 'guestName', 'homeScore']].assign(home=1).rename(
+            columns={'homeName': 'team', 'guestName': 'opponent', 'homeScore': 'goals'}),
+            df[['guestName', 'homeName', 'guestScore']].assign(home=0).rename(
+                columns={'guestName': 'team', 'homeName': 'opponent', 'guestScore': 'goals'})])
 
         self.poissonModel = smf.glm(formula="goals ~ home + team + opponent", data=self.goalModelData,
                                     family=sm.families.Poisson()).fit()
 
     def predict(self, homeTeam: str, guestTeam: str, maxGoals=10) -> list:
-        """Predicts the winner between homeTeam and guestTeam based on 
+        """Predicts the winner between homeTeam and guestTeam based on
            the poisson distributions over their expected goal amount
 
         Args:
-            homeTeam (str): Name of the home team 
+            homeTeam (str): Name of the home team
             guestTeam (str): Name of the guest team
             maxGoals (int): max amount of goals per team to consider
 
         Returns:
-            A list containig the probabilties for the homeTeam winning, a draw 
+            A list containig the probabilties for the homeTeam winning, a draw
             and the guestTeam winning in that order
         """
         model = self.poissonModel
@@ -155,8 +155,3 @@ class PoissonRegression:
         draw = np.sum(np.diag(resultMatrix))
 
         return [homeTeamWin, draw, guestTeamWin]
-
-
-
-
-
