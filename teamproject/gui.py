@@ -4,7 +4,7 @@ import sys
 
 from teamproject.models import BaselineAlgo
 from teamproject.models import PoissonRegression
-from teamproject.crawler import get_data
+from teamproject import crawler
 
 import pandas as pd
 import json
@@ -149,27 +149,11 @@ def main():
             Returns:
                 The pandas dataframe for the chosen timeframe
             """
-            # this uses the get_data funktion out of the crawler.py to get the data in the time you choose in the comboboxes
-            data = get_data(int(self.StartYearcomboBox.currentText()),int(self.StartDaycomboBox.currentText()), int(self.EndYearcomboBox.currentText()),int(self.EndDaycomboBox.currentText()))
-
-
-            #filter out duplicates and sort after the homeClub/guestclub
-            guestdata= data[['guestName']].drop_duplicates()
-            homedata= data[['homeName']].drop_duplicates()
-
-            #Transform the data into a list
-            guestdata = guestdata[['guestName']].values.tolist()
-            homedata = homedata[['homeName']].values.tolist()
-
-
-            #this loops through the GuestClubs and write them into the guestCombobox as options
-            for team in guestdata:
-                self.guestcomboBox.addItem(team[0])
-
-            #this loops through the HomeClubs and write them into the guestCombobox as options
-            for team in homedata:
-                self.homecomboBox.addItem(team[0])
-
+            # this uses the get_data function out of the crawler.py to get the data in the time you choose in the comboboxes
+            data = crawler.get_data(int(self.StartYearcomboBox.currentText()),int(self.StartDaycomboBox.currentText()), int(self.EndYearcomboBox.currentText()),int(self.EndDaycomboBox.currentText()))
+            teams = crawler.get_teams(data)
+            self.homecomboBox.addItems(teams['name'])
+            self.guestcomboBox.addItems(teams['name'])
             return data
 
         #this will get called when you press the activate crawler button

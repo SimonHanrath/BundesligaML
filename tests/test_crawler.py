@@ -53,7 +53,7 @@ def test_load_matchdata():
 
 def test_get_data():
     fromSeason = 2020
-    fromMatchday = 1
+    fromMatchday = 3
     toSeason = 2020
     toMatchday = 20
     data = crawler.get_data(fromSeason, fromMatchday, toSeason, toMatchday)
@@ -90,3 +90,14 @@ def test_get_data():
     lower = (data['season'] > fromSeason) | (data['matchday'] >= fromMatchday)
     upper = (data['season'] < toSeason) | (data['matchday'] <= toMatchday)
     assert (lower & upper).all()
+
+
+def test_get_teams():
+    matchdata = crawler.get_data(2020, 1, 2020, 38)
+    teams = crawler.get_teams(matchdata)
+    assert teams['name'].dtype == 'object'
+    assert teams['icon'].dtype == 'object'
+    assert pd.api.types.is_integer_dtype(teams['ID'])
+    assert (teams['name'] != '').all()
+    assert (teams['icon'] != '').all()
+    assert not teams.duplicated().any()

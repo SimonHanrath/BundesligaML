@@ -58,6 +58,26 @@ def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
     return data
 
 
+def get_teams(data: pd.DataFrame) -> pd.DataFrame:
+    """Computes all teams from given match data.
+
+    Args:
+        data (pd.DataFrame): Match data of any time interval.
+
+    Returns:
+        A pd.DataFrame representing teams including team details.
+    """
+    homeTeams = data[['homeID', 'homeName', 'homeIcon']]
+    guestTeams = data[['guestID', 'guestName', 'guestIcon']]
+    cols = ['ID', 'name', 'icon']
+    homeTeams.set_axis(cols, axis=1, inplace=True)
+    guestTeams.set_axis(cols, axis=1, inplace=True)
+    teams = pd.concat([homeTeams, guestTeams], ignore_index=True)
+    teams = teams.drop_duplicates().sort_values('name')
+    teams.reset_index(drop=True, inplace=True)
+    return teams
+
+
 def fetch_avail_seasons():
     """Fetches and caches all seasons available on openligadb.
     """
