@@ -19,6 +19,7 @@ def test_load_cache_index():
     assert (data['division'] != '').all()
     assert (data['availMatchdays'] > 0).all()
     assert (~data['cached'] | (data['cachedMatchdays'] > 0)).all()
+    assert not data['season'].duplicated().any()
 
 
 # test fetching and caching of next matches

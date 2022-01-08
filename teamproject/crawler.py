@@ -78,6 +78,16 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     return teams
 
 
+def refresh_cache():
+    """Collects and executes all functions refreshing cached data which will be
+    displayed in the GUI. It is possible to call the functions separately to
+    decrease startup time of the GUI.
+    """
+    fetch_avail_seasons()
+    fetch_avail_matchdays()
+    fetch_next_matches()
+
+
 def fetch_avail_seasons():
     """Fetches and caches all seasons available on openligadb.
     """
@@ -307,8 +317,9 @@ def store_matchdata(suffix: str, data: pd.DataFrame):
         fetchIfEmpty = True
         avail = load_cache_index(fetchIfEmpty)
         season = int(suffix)
-        cols = ['cachedMatchdays', 'cached', 'cachedDatetime']
+        cols = ['availMatchdays', 'cachedMatchdays', 'cached',
+                'cachedDatetime']
         days = data['matchday'].max()
-        timestamp = str(datetime.now())
-        avail.loc[avail['season'] == season, cols] = [days, True, timestamp]
+        now = str(datetime.now())
+        avail.loc[avail['season'] == season, cols] = [days, days, True, now]
         store_cache_index(avail)
