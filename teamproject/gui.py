@@ -20,6 +20,7 @@ import sys
 
 import json
 from teamproject.models import BaselineAlgo
+from teamproject.models import DixonColes
 from teamproject.models import PoissonRegression
 from teamproject.crawler import get_data
 import pandas as pd
@@ -195,7 +196,7 @@ def main():
                 model = PoissonRegression(self.filterdata())
                 print("Poisson Regression Algorithm")
             
-            predictionlist = model.predict_winner(str(self.homecomboBox.currentText()), str(self.guestcomboBox.currentText()))
+            predictionlist = model.predict(str(self.homecomboBox.currentText()), str(self.guestcomboBox.currentText()))
     
             """
             If winner[0] (which is the home win percentage) is higher then the winner[2] (which is the guest winner percentage), 
