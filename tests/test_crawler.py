@@ -28,14 +28,14 @@ def test_load_matchdata():
     data = crawler.load_matchdata('next')
     # check types
     assert data['division'].dtype == 'object'
-    assert data['homeName'].dtype == 'object'
-    assert data['homeIcon'].dtype == 'object'
-    assert data['guestName'].dtype == 'object'
-    assert data['guestIcon'].dtype == 'object'
+    assert data['homeTeamName'].dtype == 'object'
+    assert data['homeTeamIcon'].dtype == 'object'
+    assert data['guestTeamName'].dtype == 'object'
+    assert data['guestTeamIcon'].dtype == 'object'
     assert pd.api.types.is_integer_dtype(data['season'])
     assert pd.api.types.is_integer_dtype(data['matchday'])
-    assert pd.api.types.is_integer_dtype(data['homeID'])
-    assert pd.api.types.is_integer_dtype(data['guestID'])
+    assert pd.api.types.is_integer_dtype(data['homeTeamID'])
+    assert pd.api.types.is_integer_dtype(data['guestTeamID'])
     assert pd.api.types.is_integer_dtype(data['locID'])
     assert pd.api.types.is_datetime64_any_dtype(data['datetime'])
     assert pd.api.types.is_datetime64_any_dtype(data['datetimeUTC'])
@@ -43,12 +43,12 @@ def test_load_matchdata():
     assert (data['season'] != '').all()
     assert (data['division'] != '').all()
     assert (data['matchday'] > 0).all()
-    assert (data['homeName'] != '').all()
-    assert (data['homeIcon'] != '').all()
-    assert (data['guestName'] != '').all()
-    assert (data['guestIcon'] != '').all()
-    assert (data['homeID'] != data['guestID']).all()
-    assert (data['homeName'] != data['guestName']).all()
+    assert (data['homeTeamName'] != '').all()
+    assert (data['homeTeamIcon'] != '').all()
+    assert (data['guestTeamName'] != '').all()
+    assert (data['guestTeamIcon'] != '').all()
+    assert (data['homeTeamID'] != data['guestTeamID']).all()
+    assert (data['homeTeamName'] != data['guestTeamName']).all()
     assert (data['datetimeUTC'] > pd.Timestamp.utcnow()).all()
 
 
@@ -60,16 +60,16 @@ def test_get_data():
     data = crawler.get_data(fromSeason, fromMatchday, toSeason, toMatchday)
     # check types
     assert data['division'].dtype == 'object'
-    assert data['homeName'].dtype == 'object'
-    assert data['homeIcon'].dtype == 'object'
-    assert data['guestName'].dtype == 'object'
-    assert data['guestIcon'].dtype == 'object'
+    assert data['homeTeamName'].dtype == 'object'
+    assert data['homeTeamIcon'].dtype == 'object'
+    assert data['guestTeamName'].dtype == 'object'
+    assert data['guestTeamIcon'].dtype == 'object'
     assert data['locCity'].dtype == 'object'
     assert data['locStadium'].dtype == 'object'
     assert pd.api.types.is_integer_dtype(data['season'])
     assert pd.api.types.is_integer_dtype(data['matchday'])
-    assert pd.api.types.is_integer_dtype(data['homeID'])
-    assert pd.api.types.is_integer_dtype(data['guestID'])
+    assert pd.api.types.is_integer_dtype(data['homeTeamID'])
+    assert pd.api.types.is_integer_dtype(data['guestTeamID'])
     assert pd.api.types.is_integer_dtype(data['homeScore'])
     assert pd.api.types.is_integer_dtype(data['guestScore'])
     assert pd.api.types.is_integer_dtype(data['locID'])
@@ -79,14 +79,14 @@ def test_get_data():
     assert (data['season'] != '').all()
     assert (data['division'] != '').all()
     assert (data['matchday'] > 0).all()
-    assert (data['homeName'] != '').all()
-    assert (data['homeIcon'] != '').all()
-    assert (data['guestName'] != '').all()
-    assert (data['guestIcon'] != '').all()
+    assert (data['homeTeamName'] != '').all()
+    assert (data['homeTeamIcon'] != '').all()
+    assert (data['guestTeamName'] != '').all()
+    assert (data['guestTeamIcon'] != '').all()
     assert (data['homeScore'] >= 0).all()
     assert (data['guestScore'] >= 0).all()
-    assert (data['homeID'] != data['guestID']).all()
-    assert (data['homeName'] != data['guestName']).all()
+    assert (data['homeTeamID'] != data['guestTeamID']).all()
+    assert (data['homeTeamName'] != data['guestTeamName']).all()
     assert (data['datetimeUTC'] < pd.Timestamp.utcnow()).all()
     lower = (data['season'] > fromSeason) | (data['matchday'] >= fromMatchday)
     upper = (data['season'] < toSeason) | (data['matchday'] <= toMatchday)

@@ -9,10 +9,10 @@ fetchedMatches = get_data(2009, 180, 2021, 140)
        'division',
        'datetime',
        'matchday',
-       'homeID',
-       'homeName',
-       'guestID',
-       'guestName',
+       'homeTeamID',
+       'homeTeamName',
+       'guestTeamID',
+       'guestTeamName',
        'homeScore',
        'guestScore',
        'goalMinsHome',
@@ -33,13 +33,13 @@ duplicate = False
 for i in fetchedMatches.index:
 
     for team in allTeams:
-        if fetchedMatches["homeName"][i] == team:
+        if fetchedMatches["homeTeamName"][i] == team:
             duplicate = True
             break
         else:
             duplicate = False
     if duplicate is False:
-        allTeams.append(fetchedMatches["homeName"][i])
+        allTeams.append(fetchedMatches["homeTeamName"][i])
 
 print(allTeams)
 
@@ -84,11 +84,11 @@ def matchResultsHome(homeClub):
     loses = 0
     draws = 0
     for i in fetchedMatches.index:
-        if fetchedMatches["homeName"][i] == homeClub and fetchedMatches["homeScore"][i] > fetchedMatches["guestScore"][i]:
+        if fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["homeScore"][i] > fetchedMatches["guestScore"][i]:
             wins = wins + 1
-        if fetchedMatches["homeName"][i] == homeClub and fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
+        if fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
             loses = loses + 1
-        if fetchedMatches["homeName"][i] == homeClub and fetchedMatches["homeScore"][i] < fetchedMatches["guestScore"][i]:
+        if fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["homeScore"][i] < fetchedMatches["guestScore"][i]:
             draws = draws + 1
     result = [wins, loses, draws]
     return result
@@ -119,11 +119,11 @@ def matchResultsGuest(guestClub):
     loses = 0
     draws = 0
     for i in fetchedMatches.index:
-        if fetchedMatches["guestName"][i] == guestClub and fetchedMatches["guestScore"][i] > fetchedMatches["homeScore"][i]:
+        if fetchedMatches["guestTeamName"][i] == guestClub and fetchedMatches["guestScore"][i] > fetchedMatches["homeScore"][i]:
             wins = wins + 1
-        if fetchedMatches["guestName"][i] == guestClub and fetchedMatches["guestScore"][i] == fetchedMatches["homeScore"][i]:
+        if fetchedMatches["guestTeamName"][i] == guestClub and fetchedMatches["guestScore"][i] == fetchedMatches["homeScore"][i]:
             loses = loses + 1
-        if fetchedMatches["guestName"][i] == guestClub and fetchedMatches["guestScore"][i] < fetchedMatches["homeScore"][i]:
+        if fetchedMatches["guestTeamName"][i] == guestClub and fetchedMatches["guestScore"][i] < fetchedMatches["homeScore"][i]:
             draws = draws + 1
     result = [wins, loses, draws]
     return result
@@ -160,11 +160,11 @@ def specificMatchesHome(homeClub):
     draws = 0
     for team in allTeams:
         for i in fetchedMatches.index:
-            if fetchedMatches["homeName"][i] == homeClub and fetchedMatches["guestName"][i] == team and fetchedMatches["guestScore"][i] < fetchedMatches["homeScore"][i]:
+            if fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["guestTeamName"][i] == team and fetchedMatches["guestScore"][i] < fetchedMatches["homeScore"][i]:
                 wins = wins + 1
-            if fetchedMatches["homeName"][i] == homeClub and fetchedMatches["guestName"][i] == team and fetchedMatches["guestScore"][i] == fetchedMatches["homeScore"][i]:
+            if fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["guestTeamName"][i] == team and fetchedMatches["guestScore"][i] == fetchedMatches["homeScore"][i]:
                 draws = draws + 1
-            if fetchedMatches["homeName"][i] == homeClub and fetchedMatches["guestName"][i] == team and fetchedMatches["guestScore"][i] > fetchedMatches["homeScore"][i]:
+            if fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["guestTeamName"][i] == team and fetchedMatches["guestScore"][i] > fetchedMatches["homeScore"][i]:
                 loses = loses + 1
         if wins > accWins:
             accWins = wins
@@ -215,11 +215,11 @@ def specificMatchesGuest(guestClub):
     draws = 0
     for team in allTeams:
         for i in fetchedMatches.index:
-            if fetchedMatches["homeName"][i] == guestClub and fetchedMatches["homeName"][i] == team and fetchedMatches["homeScore"][i] < fetchedMatches["guestScore"][i]:
+            if fetchedMatches["homeTeamName"][i] == guestClub and fetchedMatches["homeTeamName"][i] == team and fetchedMatches["homeScore"][i] < fetchedMatches["guestScore"][i]:
                 wins = wins + 1
-            if fetchedMatches["homeName"][i] == guestClub and fetchedMatches["homeName"][i] == team and fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
+            if fetchedMatches["homeTeamName"][i] == guestClub and fetchedMatches["homeTeamName"][i] == team and fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
                 draws = draws + 1
-            if fetchedMatches["homeName"][i] == guestClub and fetchedMatches["homeName"][i] == team and fetchedMatches["homeScore"][i] > fetchedMatches["guestScore"][i]:
+            if fetchedMatches["homeTeamName"][i] == guestClub and fetchedMatches["homeTeamName"][i] == team and fetchedMatches["homeScore"][i] > fetchedMatches["guestScore"][i]:
                 loses = loses + 1
         if wins > accWins:
             accWins = wins

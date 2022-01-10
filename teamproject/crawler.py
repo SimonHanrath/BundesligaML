@@ -67,8 +67,8 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     Returns:
         A pd.DataFrame representing teams including team details.
     """
-    homeTeams = data[['homeID', 'homeName', 'homeIcon']]
-    guestTeams = data[['guestID', 'guestName', 'guestIcon']]
+    homeTeams = data[['homeTeamID', 'homeTeamName', 'homeTeamIcon']]
+    guestTeams = data[['guestTeamID', 'guestTeamName', 'guestTeamIcon']]
     cols = ['ID', 'name', 'icon']
     homeTeams.set_axis(cols, axis=1, inplace=True)
     guestTeams.set_axis(cols, axis=1, inplace=True)
@@ -78,7 +78,7 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     return teams
 
 
-def refresh_cache():
+def refresh_ui_cache():
     """Collects and executes all functions refreshing cached data which will be
     displayed in the GUI. It is possible to call the functions separately to
     decrease startup time of the GUI.
@@ -231,12 +231,12 @@ def parse_match(match: dict) -> dict:
         'datetime': match['matchDateTime'],
         'datetimeUTC': match['matchDateTimeUTC'],
         'matchday': match['group']['groupOrderID'],
-        'homeID': match['team1']['teamId'],
-        'homeName': match['team1']['teamName'],
-        'homeIcon': match['team1']['teamIconUrl'],
-        'guestID': match['team2']['teamId'],
-        'guestName': match['team2']['teamName'],
-        'guestIcon': match['team2']['teamIconUrl'],
+        'homeTeamID': match['team1']['teamId'],
+        'homeTeamName': match['team1']['teamName'],
+        'homeTeamIcon': match['team1']['teamIconUrl'],
+        'guestTeamID': match['team2']['teamId'],
+        'guestTeamName': match['team2']['teamName'],
+        'guestTeamIcon': match['team2']['teamIconUrl'],
         'finished': match['matchIsFinished'],
         'homeScore': score['home'],
         'guestScore': score['guest'],

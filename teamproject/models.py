@@ -1,14 +1,12 @@
 """
 This module contains code for prediction models.
 """
-
-from scipy.stats import poisson,skellam
+from scipy.stats import poisson
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy.optimize import minimize
-
 
 
 class BaselineAlgo:
@@ -29,21 +27,21 @@ class BaselineAlgo:
         """
         self.df = df
 
-    def predict(self, homeTeam: str, guestTeam: str)->list:
-        """Predicts the winner between homeTeam and guestTeam based on 
+    def predict(self, homeTeam: str, guestTeam: str) -> list:
+        """Predicts the winner between homeTeam and guestTeam based on
            past matches between them
         Args:
-            homeTeam (str): Name of the home team 
+            homeTeam (str): Name of the home team
             guestTeam (str): Name of the guest team
         Returns:
-            A list containig the probabilties for the homeTeam winning, a draw 
+            A list containig the probabilties for the homeTeam winning, a draw
             and the guestTeam winning in that order
         """
         df = self.df
 
         # get matches between the two given teams
-        team1 = df.homeName.values
-        team2 = df.guestName.values
+        team1 = df.homeTeamName.values
+        team2 = df.guestTeamName.values
 
         matches = df[((team1 == homeTeam) & (team2 == guestTeam)) |
                      ((team1 == guestTeam) & (team2 == homeTeam))]
@@ -61,26 +59,22 @@ class BaselineAlgo:
             return [winsHomeTeamTotal / len(df), drawsTotal / len(df), winsGuestTeamTotal / len(df)]
 
         # if matches exist: collect results in matches between them
-        homeClub = matches.homeClub.values
-        guestClub = matches.guestClub.values
+        homeClub = matches.homeTeamName.values
+        guestClub = matches.guestTeamName.values
 
         homeScore = matches.homeScore.values
         guestScore = matches.guestScore.values
 
         winsHomeTeam = np.sum((homeScore > guestScore) & (homeClub == homeTeam) |
-                                (homeScore < guestScore) & (guestClub == homeTeam))
+                              (homeScore < guestScore) & (guestClub == homeTeam))
 
         winsGuestTeam = np.sum((homeScore > guestScore) & (homeClub == guestTeam) |
-                                 (homeScore < guestScore) & (guestClub == guestTeam))
+                               (homeScore < guestScore) & (guestClub == guestTeam))
 
         draws = np.sum(matches['homeScore'] == matches['guestScore'])
 
         # returns probability for each of the 3 events in a list
         return [winsHomeTeam / len(matches), draws / len(matches), winsGuestTeam / len(matches)]
-
-
-
-
 
 
 
@@ -111,25 +105,25 @@ class PoissonRegression:
             df: A pandas Dataframe containig the matches to consider for predictions
         """
         self.df = df
-        self.teams = np.unique(self.df['guestClub'])
+        self.teams = np.unique(self.df['guestTeamName'])
 
-        self.goalModelData = pd.concat([df[['homeClub', 'guestClub', 'homeScore']].assign(home=1).rename(
-            columns={'homeClub': 'team', 'guestClub': 'opponent', 'homeScore': 'goals'}),
-            df[['guestClub', 'homeClub', 'guestScore']].assign(home=0).rename(
-                columns={'guestClub': 'team', 'homeClub': 'opponent', 'guestScore': 'goals'})])
+        self.goalModelData = pd.concat([df[['homeTeamName', 'guestTeamName', 'homeScore']].assign(home=1).rename(
+            columns={'homeTeamName': 'team', 'guestTeamName': 'opponent', 'homeScore': 'goals'}),
+            df[['guestTeamName', 'homeTeamName', 'guestScore']].assign(home=0).rename(
+                columns={'guestTeamName': 'team', 'homeTeamName': 'opponent', 'guestScore': 'goals'})])
 
         self.poissonModel = smf.glm(formula="goals ~ home + team + opponent", data=self.goalModelData,
                                     family=sm.families.Poisson()).fit()
 
     def predict(self, homeTeam: str, guestTeam: str, maxGoals=10) -> list:
-        """Predicts the winner between homeTeam and guestTeam based on 
+        """Predicts the winner between homeTeam and guestTeam based on
            the poisson distributions over their expected goal amount
         Args:
-            homeTeam (str): Name of the home team 
+            homeTeam (str): Name of the home team
             guestTeam (str): Name of the guest team
             maxGoals (int): max amount of goals per team to consider
         Returns:
-            A list containig the probabilties for the homeTeam winning, a draw 
+            A list containig the probabilties for the homeTeam winning, a draw
             and the guestTeam winning in that order
         """
         model = self.poissonModel
@@ -142,7 +136,7 @@ class PoissonRegression:
                                                             'opponent': homeTeam, 'home': 0},
                                                       index=[1])).values[0]
         else:
-        	# if one team is unknown, assume avg home and away goals
+            # if one team is unknown, assume avg home and away goals
             homeGoalsAvg = sum(self.df['homeScore']) / len(self.df['homeScore'])
             awayGoalsAvg = sum(self.df['guestScore']) / len(self.df['guestScore'])
 
@@ -155,7 +149,6 @@ class PoissonRegression:
         draw = np.sum(np.diag(resultMatrix))
         print([homeTeamWin, draw, guestTeamWin])
         return [homeTeamWin, draw, guestTeamWin]
-
 
 
 
@@ -184,19 +177,16 @@ class DixonColes:
         Args:
             df: A pandas Dataframe containig the matches to consider for predictions
         """
-
         self.xi = xi
-        #TODO: how to set xi?
+        # TODO: how to set xi?
         self.df = df
-        self.teams = np.unique(self.df['guestClub'])
+        self.teams = np.unique(self.df['guestTeamName'])
 
         # add column containing the time difference to the newest game
         maxTime = max(pd.to_datetime(self.df.date.values))
         self.df['time_dif'] = (maxTime - pd.to_datetime(self.df.date.values)).days
 
-
         self.params = self.solve_parameters(self.df, self.xi)
-
 
     def rho_correction(self, x, y, lambda_x, mu_y, rho):
         """function to reweigh the probability for the low score outcome games
@@ -227,7 +217,6 @@ class DixonColes:
                 1
             ])
 
-
     def dc_log_like_decay(self, x, y, alpha_x, beta_x, alpha_y, beta_y, rho, gamma, t, xi):
         """helper function for fitting the Poisson distrubituion manually
         Args:
@@ -238,12 +227,12 @@ class DixonColes:
             t (array of int): days between latest timestamp in data and current
             xi : factor for the timedecay in the weighing
         Returns:
-            an array of floats representing the log likelihoods of observing the score under the 
+            an array of floats representing the log likelihoods of observing the score under the
             distribution described by the given parameters
         """
         lambda_x, mu_y = np.exp(alpha_x + beta_y + gamma), np.exp(alpha_y + beta_x)
         return np.exp(-xi*t) * (np.log(self.rho_correction(x, y, lambda_x, mu_y, rho)) +
-                                  np.log(poisson.pmf(x, lambda_x)) + np.log(poisson.pmf(y, mu_y)))
+                                np.log(poisson.pmf(x, lambda_x)) + np.log(poisson.pmf(y, mu_y)))
 
     def estimate_paramters(self, params, teams, dataset, nTeams, homeGoals, awayGoals, xi):
         """function to estimate how good the current parameters describe the df
@@ -259,10 +248,10 @@ class DixonColes:
         scoreCoefs = dict(zip(teams, params[:nTeams]))
         defendCoefs = dict(zip(teams, params[nTeams:(2 * nTeams)]))
 
-        scoreCoefsHomeTeam = np.array([scoreCoefs[team] for team in dataset.homeClub.values])
-        defendCoefsHomeTeam = np.array([defendCoefs[team] for team in dataset.homeClub.values])
-        scoreCoefsAwayTeam = np.array([scoreCoefs[team] for team in dataset.guestClub.values])
-        defendCoefsAwayTeam = np.array([defendCoefs[team] for team in dataset.guestClub.values])
+        scoreCoefsHomeTeam = np.array([scoreCoefs[team] for team in dataset.homeTeamName.values])
+        defendCoefsHomeTeam = np.array([defendCoefs[team] for team in dataset.homeTeamName.values])
+        scoreCoefsAwayTeam = np.array([scoreCoefs[team] for team in dataset.guestTeamName.values])
+        defendCoefsAwayTeam = np.array([defendCoefs[team] for team in dataset.guestTeamName.values])
 
         rho, gamma = params[-2:]
         rho = np.repeat(rho, len(homeGoals))
@@ -271,14 +260,12 @@ class DixonColes:
         timeDifs = dataset.time_dif.values
 
         logLike = self.dc_log_like_decay(homeGoals, awayGoals, scoreCoefsHomeTeam, defendCoefsHomeTeam,
-                               scoreCoefsAwayTeam, defendCoefsAwayTeam, rho, gamma, timeDifs, xi)
+                                         scoreCoefsAwayTeam, defendCoefsAwayTeam, rho, gamma, timeDifs, xi)
 
         return -sum(logLike)
 
-
-
-    def solve_parameters(self, dataset,xi, initVals=None, options={'disp': True, 'maxiter':100},
-                         constraints = [{'type':'eq', 'fun': lambda x: sum(x[:20])-20}] , **kwargs):
+    def solve_parameters(self, dataset, xi, initVals=None, options={'disp': True, 'maxiter': 100},
+                         constraints=[{'type': 'eq', 'fun': lambda x: sum(x[:20])-20}], **kwargs):
         """tries to approximate the best parameters to fit the function
            basicly like PR but with the two fixes
         Args:
@@ -290,9 +277,9 @@ class DixonColes:
         Returns:
             a dictionary with the best estimate for the paramters
         """
-        teams = np.sort(dataset['homeClub'].unique())
+        teams = np.sort(dataset['homeTeamName'].unique())
         # check for no weirdness in dataset
-        awayTeams = np.sort(dataset['guestClub'].unique())
+        awayTeams = np.sort(dataset['guestTeamName'].unique())
         if not np.array_equal(teams, awayTeams):
             raise ValueError("Something's not right")
 
@@ -300,59 +287,50 @@ class DixonColes:
 
         if initVals is None:
             # random initialisation of model parameters
-            #standart_params = self.standart_params
+            # standart_params = self.standart_params
 
-            initVals = np.concatenate((np.random.uniform(0,1,(nTeams)), # attack strength
-                                        np.random.uniform(0,-1,(nTeams)), # defence strength
-                                        np.array([0, 1.0]) # rho (score correction), gamma (home advantage)
-                                        ))
+            initVals = np.concatenate((np.random.uniform(0, 1, (nTeams)),  # attack strength
+                                       np.random.uniform(0, -1, (nTeams)),  # defence strength
+                                       np.array([0, 1.0])  # rho (score correction), gamma (home advantage)
+                                       ))
         x = dataset.homeScore.values
         y = dataset.guestScore.values
-        opt_output = minimize(lambda p: self.estimate_paramters(p, teams, dataset, nTeams,x,y, xi), initVals, options=options, constraints = constraints, **kwargs)
-        
+        opt_output = minimize(lambda p: self.estimate_paramters(p, teams, dataset, nTeams, x, y, xi), initVals, options=options, constraints=constraints, **kwargs)
 
-        return dict(zip(["attack_"+team for team in teams] +
-                        ["defence_"+team for team in teams] +
+        return dict(zip(["attack_" + team for team in teams] +
+                        ["defence_" + team for team in teams] +
                         ['rho', 'home_adv'],
                         opt_output.x))
 
-
-
-
     def predict(self, homeClub: str, guestClub: str, maxGoals=10):
-        """Predicts the winner between homeTeam and guestTeam based on 
+        """Predicts the winner between homeTeam and guestTeam based on
            the poisson distributions over their expected goal amount
         Args:
-            homeClub (str): Name of the home team 
+            homeClub (str): Name of the home team
             guestClub (str): Name of the guest team
             maxGoals (int): max amount of goals per team to consider
         Returns:
-            A list containig the probabilties for the homeTeam winning, a draw 
+            A list containig the probabilties for the homeTeam winning, a draw
             and the guestTeam winning in that order
         """
-
         paramsDict = self.params
 
         if homeClub in self.teams and guestClub in self.teams:
-        	teamAvgs = [
-        	np.exp(paramsDict['attack_' + homeClub] + paramsDict['defence_' + guestClub] + paramsDict['home_adv']),
-            np.exp(paramsDict['defence_' + homeClub] + paramsDict['attack_' + guestClub])]
+            teamAvgs = [
+                np.exp(paramsDict['attack_' + homeClub] + paramsDict['defence_' + guestClub] + paramsDict['home_adv']),
+                np.exp(paramsDict['defence_' + homeClub] + paramsDict['attack_' + guestClub])]
 
         else:
-        	teamAvgs = [
-            sum(self.df['homeScore']) / len(self.df['homeScore']),
-            sum(self.df['guestScore']) / len(self.df['guestScore'])]
-
-
-
+            teamAvgs = [sum(self.df['homeScore']) / len(self.df['homeScore']),
+                        sum(self.df['guestScore']) / len(self.df['guestScore'])]
 
         teamPred = [[poisson.pmf(i, teamAvg) for i in range(0, maxGoals + 1)] for teamAvg in teamAvgs]
 
         outputMatrix = np.outer(np.array(teamPred[0]), np.array(teamPred[1]))
 
-        correctionMatrix = np.array([[self.rho_correction(homeGoals, awayGoals, teamAvgs[0],
-                                                      teamAvgs[1], paramsDict['rho']) for awayGoals in range(2)]
-                                      for homeGoals in range(2)])
+        correctionMatrix = np.array([[self.rho_correction(
+            homeGoals, awayGoals, teamAvgs[0], teamAvgs[1], paramsDict['rho'])
+            for awayGoals in range(2)] for homeGoals in range(2)])
         outputMatrix[:2, :2] = outputMatrix[:2, :2] * correctionMatrix
 
         homeTeamWin = np.sum(np.tril(outputMatrix, -1))
