@@ -42,8 +42,8 @@ class BaselineAlgo:
         df = self.df
 
         # get matches between the two given teams
-        team1 = df.homeClub.values
-        team2 = df.guestClub.values
+        team1 = df.homeName.values
+        team2 = df.guestName.values
 
         matches = df[((team1 == homeTeam) & (team2 == guestTeam)) |
                      ((team1 == guestTeam) & (team2 == homeTeam))]
@@ -77,7 +77,6 @@ class BaselineAlgo:
 
         # returns probability for each of the 3 events in a list
         return [winsHomeTeam / len(matches), draws / len(matches), winsGuestTeam / len(matches)]
-
 
 
 
@@ -360,7 +359,3 @@ class DixonColes:
         guestTeamWin = np.sum(np.triu(outputMatrix, 1))
         draw = np.sum(np.diag(outputMatrix))
         return [homeTeamWin, draw, guestTeamWin]
-
-
-
-
