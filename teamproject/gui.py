@@ -1,9 +1,11 @@
+import sys
+import pandas as pd
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QCheckBox, QApplication, QWidget, QMessageBox, QDialog, QComboBox
-from teamproject.models import BaselineAlgo, PoissonRegression
 from teamproject import crawler
-import pandas as pd
-import sys
+from teamproject.models import BaselineAlgo
+from teamproject.models import DixonColes
+from teamproject.models import PoissonRegression
 
 
 def main():
@@ -239,7 +241,6 @@ def main():
             elif self.algocomboBox.currentText() == "Poisson Regression Algorithm":
                 model = PoissonRegression(self.matchdata)
                 print("Poisson Regression Algorithm")
-
             homeName = str(self.homecomboBox.currentText())
             guestName = str(self.guestcomboBox.currentText())
             predictionlist = model.predict(homeName, guestName)
