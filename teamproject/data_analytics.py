@@ -27,7 +27,7 @@ where "date" specifies the local date and time a match took place,
 ggf. weitere wichtige Daten: Liga; Ort; Tore (Spielminute, Torschütze,
 Eigentor?, Strafe?, Verlängerung?); Wetter (von woanders)
 """
-#filePath = fetch_data(2009,180, 2021,140,'C:/Users/Philipp Wagner/Desktop/Python_Projekte/BundesligaML/teamproject/crawled_data/matches-2009-180-2021-140.json')
+
 fetchedMatches = get_data(2009,180, 2021,140)
 """
 Index(['date', 
@@ -42,17 +42,6 @@ Index(['date',
        'league'],
        dtype='object')
 """
-#with open(filePath) as file:
-#   fetchedMatches = json.loads(file.read())
-
-"""
-Example:
-for match in fetchedMatches:
-    print(match["homeScore"])
-"""
-#testing list of teams in Bundesliga
-#teams = ["VfL Wolfsburg", "Borussia Dortmund", "1. FC Nürnberg", "Werder Bremen", "Hertha BSC", "1. FSV Mainz 05", "TSG 1899 Hoffenheim", "VfL Bochum", "SC Freiburg", "FC Bayern München", "VfB Stuttgart", "Hamburger SV",
-#         "Bayer Leverkusen", "Hannover 96", "Eintracht Frankfurt", "1. FC Köln", "Borussia Mönchengladbach", "FC Schalke 04" ]
 
 #List of all teams without dupllicates
 allTeams = []
@@ -71,10 +60,6 @@ for i in fetchedMatches.index:
 
 print(allTeams)
 
-
-
-
-#figure.suptitle("Abbildungsüberschrift")
 
 # wins by home team
 homeWins =0
@@ -160,7 +145,7 @@ def matchResultsGuest(guestClub):
     return result
 
    # print(guestClub + " : %s" % wins)
-  #  print(guestClub + " : %s" % loses)
+   #  print(guestClub + " : %s" % loses)
    # print(guestClub + " : %s" % draws)
 
 #print("machtes of each team as guestClub: ")
@@ -212,8 +197,8 @@ def specificMatchesHome (homeClub):
     result = [accWinsName, accWins, accLosesName, accLoses, accDrawsName, accDraws]
     return result
 
-  #  print("As homeClub " + homeClub + " wins the most times against: " + accWinsName)
-  #  print(homeClub + " has won %s" % accWins + " times against " + accWinsName)
+   #  print("As homeClub " + homeClub + " wins the most times against: " + accWinsName)
+   #  print(homeClub + " has won %s" % accWins + " times against " + accWinsName)
    # print("As homeClub " + homeClub + " loses the most times against: " + accLosesName)
    # print(homeClub + " has lost %s" % accLoses + " times against " + accLosesName)
    # print("As homeClub " + homeClub + " draws the most times against: " + accDrawsName)
