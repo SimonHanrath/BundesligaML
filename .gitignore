@@ -44,6 +44,9 @@ htmlcov
 .*.swp
 _build
 
+# Cache files
+teamproject/cache/*
+
 # other files
 .DS_Store
 .Rhistory
