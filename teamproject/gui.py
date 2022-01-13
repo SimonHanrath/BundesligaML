@@ -31,26 +31,27 @@ def main():
             self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
             self.buttonBox.setObjectName('buttonBox')
 
+
             # A label that tells you to select the start time, to change the text have a look at the retranslateUI funktion
             self.SelectStartTimeLabel = QtWidgets.QLabel(Dialog)
-            self.SelectStartTimeLabel.setGeometry(QtCore.QRect(30, 80, 371, 31))
+            self.SelectStartTimeLabel.setGeometry(QtCore.QRect(30, 180, 371, 31))
             self.SelectStartTimeLabel.setObjectName('SelectStartTimeLabel')
 
             # A label that tells you to select the end time, to change the text have a look at the retranslateUI funktion
             self.SelectEndTimeLabel = QtWidgets.QLabel(Dialog)
-            self.SelectEndTimeLabel.setGeometry(QtCore.QRect(450, 80, 371, 31))
+            self.SelectEndTimeLabel.setGeometry(QtCore.QRect(450, 180, 371, 31))
             self.SelectEndTimeLabel.setObjectName('SelectEndTimeLabel')
 
             # The combobox to select the start season
             self.StartYearcomboBox = QtWidgets.QComboBox(Dialog)
-            self.StartYearcomboBox.setGeometry(QtCore.QRect(40, 150, 104, 87))
+            self.StartYearcomboBox.setGeometry(QtCore.QRect(40, 250, 104, 87))
             self.StartYearcomboBox.setObjectName('StartYearcomboBox')
             self.StartYearcomboBox.addItem('SelectStartSeasonLabel')
             self.reset_items(self.StartYearcomboBox)
 
             # The combobox to select the start match day
             self.StartDaycomboBox = QtWidgets.QComboBox(Dialog)
-            self.StartDaycomboBox.setGeometry(QtCore.QRect(160, 150, 104, 87))
+            self.StartDaycomboBox.setGeometry(QtCore.QRect(160, 250, 104, 87))
             self.StartDaycomboBox.setObjectName('StartDaycomboBox')
             self.StartDaycomboBox.setEnabled(False)
             self.StartDaycomboBox.addItem('SelectStartMatchdayLabel')
@@ -58,14 +59,14 @@ def main():
 
             # The combobox to select the end season
             self.EndYearcomboBox = QtWidgets.QComboBox(Dialog)
-            self.EndYearcomboBox.setGeometry(QtCore.QRect(450, 150, 104, 87))
+            self.EndYearcomboBox.setGeometry(QtCore.QRect(450, 250, 104, 87))
             self.EndYearcomboBox.setObjectName('EndYearcomboBox')
             self.EndYearcomboBox.addItem('SelectEndSeasonLabel')
             self.reset_items(self.EndYearcomboBox)
 
             # The combobox to select the end match day
             self.EndDaycomboBox = QtWidgets.QComboBox(Dialog)
-            self.EndDaycomboBox.setGeometry(QtCore.QRect(570, 150, 104, 87))
+            self.EndDaycomboBox.setGeometry(QtCore.QRect(570, 250, 104, 87))
             self.EndDaycomboBox.setObjectName('EndDaycomboBox')
             self.EndDaycomboBox.setEnabled(False)
             self.EndDaycomboBox.addItem('SelectEndMatchdayLabel')
@@ -73,25 +74,25 @@ def main():
 
             # force update flag
             self.forceUpdateBox = QtWidgets.QCheckBox(Dialog)
-            self.forceUpdateBox.setGeometry(QtCore.QRect(40, 210, 30, 30))
+            self.forceUpdateBox.setGeometry(QtCore.QRect(40, 310, 30, 30))
             self.forceUpdateLabel = QtWidgets.QLabel(Dialog)
-            self.forceUpdateLabel.setGeometry(QtCore.QRect(60, 210, 100, 31))
+            self.forceUpdateLabel.setGeometry(QtCore.QRect(60, 310, 100, 31))
             self.forceUpdateLabel.setObjectName('forceUpdateLabel')
 
             # activate crawler Button
             self.crawlerbutton = QtWidgets.QPushButton(Dialog)
-            self.crawlerbutton.setGeometry(QtCore.QRect(50, 250, 331, 101))
+            self.crawlerbutton.setGeometry(QtCore.QRect(50, 350, 331, 101))
             self.crawlerbutton.setObjectName('Activate Crawler')
             self.crawlerbutton.clicked.connect(self.crawlercall)
 
             # a label that tells you to select the team, to change the text have a look at the retranslateUI funktion
             self.SelectTeamLabel = QtWidgets.QLabel(Dialog)
-            self.SelectTeamLabel.setGeometry(QtCore.QRect(30, 380, 371, 31))
+            self.SelectTeamLabel.setGeometry(QtCore.QRect(30, 480, 371, 31))
             self.SelectTeamLabel.setObjectName('SelectTeamLabel')
 
             # the combobox to select the home team
             self.homecomboBox = QtWidgets.QComboBox(Dialog)
-            self.homecomboBox.setGeometry(QtCore.QRect(60, 430, 301, 61))
+            self.homecomboBox.setGeometry(QtCore.QRect(60, 530, 301, 61))
             self.homecomboBox.setObjectName('homecomboBox')
             self.homecomboBox.setEnabled(False)
             self.homecomboBox.addItem('SelectHomeTeamLabel')
@@ -99,7 +100,7 @@ def main():
 
             # the combobox to select the guest team
             self.guestcomboBox = QtWidgets.QComboBox(Dialog)
-            self.guestcomboBox.setGeometry(QtCore.QRect(570, 430, 301, 61))
+            self.guestcomboBox.setGeometry(QtCore.QRect(570, 530, 301, 61))
             self.guestcomboBox.setObjectName('guestcomboBox')
             self.guestcomboBox.setEnabled(False)
             self.guestcomboBox.addItem('SelectGuestTeamLabel')
@@ -107,16 +108,16 @@ def main():
 
             # select the Algo label, to change the text have a look at the retranslateUI funktion
             self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
-            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 510, 371, 31))
+            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
             self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
 
             # Algocombobox: Select the algorithm you want to use
             self.algocomboBox = QtWidgets.QComboBox(Dialog)
-            self.algocomboBox.setGeometry(QtCore.QRect(60, 570, 301, 61))
+            self.algocomboBox.setGeometry(QtCore.QRect(60, 90, 301, 61))
             self.algocomboBox.setObjectName('algocomboBox')
             self.algocomboBox.addItem('Baseline Algorithm')
             self.algocomboBox.addItem('Poisson Regression Algorithm')
-            self.algocomboBox.setEnabled(False)
+            self.algocomboBox.addItem('Dixon Coles Algorithm')
 
             # start training button
             self.trainingbutton = QtWidgets.QPushButton(Dialog)
@@ -195,7 +196,6 @@ def main():
             self.crawlerbutton.setEnabled(False)
             self.homecomboBox.setEnabled(False)
             self.guestcomboBox.setEnabled(False)
-            self.algocomboBox.setEnabled(False)
             self.trainingbutton.setEnabled(False)
             self.resultsbutton.setEnabled(False)
             self.reset_items(self.homecomboBox)
@@ -226,7 +226,7 @@ def main():
             self.crawlerbutton.setEnabled(True)
 
         def trainAlgo(self):
-            """predicts the winner with the models.py algorithms. doesn't work automaticly yet
+            """predicts the winner with the models.py algorithms.
 
              Returns:
                 a string, homeClub or guestClub, depending on the winner
@@ -248,6 +248,10 @@ def main():
             elif self.algocomboBox.currentText() == 'Poisson Regression Algorithm':
                 model = PoissonRegression(self.matchdata)
                 print('Poisson Regression Algorithm')
+            elif self.algocomboBox.currentText() == 'Dixon Coles Algorithm':
+                model = DixonColes(self.matchdata)
+                print('Dixon Coles')
+            
             homeTeamName = str(self.homecomboBox.currentText())
             guestTeamName = str(self.guestcomboBox.currentText())
             predictionlist = model.predict(homeTeamName, guestTeamName)
