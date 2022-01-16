@@ -183,8 +183,8 @@ class DixonColes:
         self.teams = np.unique(self.df['guestTeamName'])
 
         # add column containing the time difference to the newest game
-        maxTime = max(pd.to_datetime(self.df.date.values))
-        self.df['time_dif'] = (maxTime - pd.to_datetime(self.df.date.values)).days
+        maxTime = max(pd.to_datetime(self.df.datetime.values))
+        self.df['time_dif'] = (maxTime - pd.to_datetime(self.df.datetime.values)).days
 
         self.params = self.solve_parameters(self.df, self.xi)
 

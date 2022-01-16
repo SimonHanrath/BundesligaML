@@ -1,4 +1,4 @@
-from crawler import get_data
+#from crawler import get_data
 import matplotlib.pyplot as pp
 import numpy as n
 

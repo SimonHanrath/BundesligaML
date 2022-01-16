@@ -41,6 +41,12 @@ def main():
             self.playdaybutton.clicked.connect(self.playdaycall)
 
             # select the Algo label, to change the text have a look at the retranslateUI funktion
+            self.playdayLabel = QtWidgets.QLabel(Dialog)
+            self.playdayLabel.setGeometry(QtCore.QRect(830, 90, 471, 431))
+            self.playdayLabel.setObjectName('playdayLabel')
+
+
+            # select the Algo label, to change the text have a look at the retranslateUI funktion
             self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
             self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
             self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
@@ -290,6 +296,7 @@ def main():
                 model = PoissonRegression(self.matchdata)
                 print('Poisson Regression Algorithm')
             elif self.algocomboBox.currentText() == 'Dixon Coles Algorithm':
+                print(self.matchdata)
                 model = DixonColes(self.matchdata)
                 print('Dixon Coles')
             
@@ -333,7 +340,11 @@ def main():
         
         # this will get called when you press the playday button.
         def playdaycall(self):
-            print(crawler.fetch_next_matches())
+            print(self.next)
+            output = self.next.to_string()
+            #self.playdayLabel.setText(self.next['datetime'].to_string + self.next['homeTeamName'].to_string + self.next['guestTeamName'].to_string)
+            self.playdayLabel.setText(output)
+            print(output[1-200])
 
 
          # this will get called when you press the Show statistics button.
