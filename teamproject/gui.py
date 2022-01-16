@@ -1,8 +1,10 @@
 import sys
 import pandas as pd
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from teamproject import crawler
+from teamproject import data_analytics
 from teamproject.models import BaselineAlgo
 from teamproject.models import DixonColes
 from teamproject.models import PoissonRegression
@@ -20,13 +22,14 @@ def main():
             Args:
                 Dialog (PyQt5.QtWidgets.QDialog): Main window
             """
-            Dialog.setMinimumSize(1055, 841)
-            Dialog.resize(1055, 841)
+            Dialog.setMinimumSize(1355, 841)
+            Dialog.resize(1355, 841)
             print(type(Dialog))
+            currentDate = (0,0,0,0)
 
             # create the ok and cancel buttons
             self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-            self.buttonBox.setGeometry(QtCore.QRect(700, 800, 341, 32))
+            self.buttonBox.setGeometry(QtCore.QRect(1000, 800, 341, 32))
             self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
             self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
             self.buttonBox.setObjectName('buttonBox')
@@ -124,6 +127,20 @@ def main():
             self.guestcomboBox.addItem('SelectGuestTeamLabel')
             self.reset_items(self.guestcomboBox)
 
+            # A label of colon between Team Icons
+            self.colon = QtWidgets.QLabel(Dialog)
+            self.colon.setGeometry(QtCore.QRect(1100, 180, 20, 61))
+            self.colon.setObjectName(':')
+
+            # A label that shows home Team Icon
+            self.homeIcon = QtWidgets.QLabel(Dialog)
+            self.homeIcon.setGeometry(QtCore.QRect(1050, 180, 20, 61))
+            self.homeIcon.setObjectName('homeIcon')
+
+            # select the Algo label, to change the text have a look at the retranslateUI funktion
+            self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
+            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
+            self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
 
 
             # start training button
@@ -144,6 +161,13 @@ def main():
             self.resultLabel = QtWidgets.QLabel(Dialog)
             self.resultLabel.setGeometry(QtCore.QRect(410, 780, 371, 31))
             self.resultLabel.setObjectName('resultLabel')
+
+            # show statistic button
+            self.statisticbutton = QtWidgets.QPushButton(Dialog)
+            self.statisticbutton.setGeometry(QtCore.QRect(1100, 660, 90, 30))
+            self.statisticbutton.setObjectName('more statistics')
+            self.statisticbutton.clicked.connect(self.statisticscall)
+            self.statisticbutton.setEnabled(False)
 
             # call the retranslate
             self.retranslateUi(Dialog)
@@ -221,6 +245,7 @@ def main():
             else:
                 self.matchdata = crawler.get_data(
                     fromSeason, fromDay, toSeason, toDay, forceUpdate)
+                self.currentDate = self.matchdata
                 self.teamdata = crawler.get_teams(self.matchdata)
                 teamList = self.teamdata.to_dict('records')
                 for team in teamList:
@@ -231,6 +256,15 @@ def main():
                 self.algocomboBox.setEnabled(True)
                 self.trainingbutton.setEnabled(True)
             self.crawlerbutton.setEnabled(True)
+
+            # this will get called when you select the home Team.
+            def homeIconCall(self):
+                """
+                """
+                pixmap = QPixmap('image.jpeg')
+                self.homeIcon.setPixmap(pixmap)
+
+
 
         def trainAlgo(self):
             """predicts the winner with the models.py algorithms.
@@ -263,6 +297,7 @@ def main():
             guestTeamName = str(self.guestcomboBox.currentText())
             predictionlist = model.predict(homeTeamName, guestTeamName)
             self.resultsbutton.setEnabled(True)
+            self.statisticbutton.setEnabled(True)
 
             """
             If predictionlist[0] (which is the home win percentage) is higher then the predictionlist[2] (which is the guest winner percentage),
@@ -274,7 +309,7 @@ def main():
                 winner = 'guestClub'
 
             return winner
-
+            self.statisticbutton.setEnabled(True)
         # this will get called when you press the Start training button
         def trainingcall(self):
             """
@@ -300,6 +335,15 @@ def main():
         def playdaycall(self):
             print(crawler.fetch_next_matches())
 
+
+         # this will get called when you press the Show statistics button.
+        def statisticscall(self):
+            """
+            """
+            data_analytics.main(self.currentDate,self.homecomboBox.currentText(), self.guestcomboBox.currentText())
+
+
+
         def retranslateUi(self, Dialog):
             """Rename all the objects to the desired names.
 
@@ -324,6 +368,8 @@ def main():
             self.SelectAlgoLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the algorithm you want to use:</span></p></body></html>'))
             self.SelectEndTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the end year and day:</span></p></body></html>'))
             self.resultLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Results:</span></p><p><br/></p></body></html>'))
+            self.colon.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:31pt;\'> : </span></p><p><br/></p></body></html>'))
+            self.statisticbutton.setText(_translate('Dialog','more statistics'))
 
     # create the window
     app = QtWidgets.QApplication(sys.argv)
