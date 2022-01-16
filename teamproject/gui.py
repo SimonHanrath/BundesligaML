@@ -30,7 +30,25 @@ def main():
             self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
             self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
             self.buttonBox.setObjectName('buttonBox')
+            
+            # create a button to show the upcoming playday
+            self.playdaybutton = QtWidgets.QPushButton(Dialog)
+            self.playdaybutton.setGeometry(QtCore.QRect(550, 90, 230, 60))
+            self.playdaybutton.setObjectName('Show upcoming matches')
+            self.playdaybutton.clicked.connect(self.playdaycall)
 
+            # select the Algo label, to change the text have a look at the retranslateUI funktion
+            self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
+            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
+            self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
+
+            # Algocombobox: Select the algorithm you want to use
+            self.algocomboBox = QtWidgets.QComboBox(Dialog)
+            self.algocomboBox.setGeometry(QtCore.QRect(60, 90, 301, 60))
+            self.algocomboBox.setObjectName('algocomboBox')
+            self.algocomboBox.addItem('Baseline Algorithm')
+            self.algocomboBox.addItem('Poisson Regression Algorithm')
+            self.algocomboBox.addItem('Dixon Coles Algorithm')
 
             # A label that tells you to select the start time, to change the text have a look at the retranslateUI funktion
             self.SelectStartTimeLabel = QtWidgets.QLabel(Dialog)
@@ -106,18 +124,7 @@ def main():
             self.guestcomboBox.addItem('SelectGuestTeamLabel')
             self.reset_items(self.guestcomboBox)
 
-            # select the Algo label, to change the text have a look at the retranslateUI funktion
-            self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
-            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
-            self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
 
-            # Algocombobox: Select the algorithm you want to use
-            self.algocomboBox = QtWidgets.QComboBox(Dialog)
-            self.algocomboBox.setGeometry(QtCore.QRect(60, 90, 301, 61))
-            self.algocomboBox.setObjectName('algocomboBox')
-            self.algocomboBox.addItem('Baseline Algorithm')
-            self.algocomboBox.addItem('Poisson Regression Algorithm')
-            self.algocomboBox.addItem('Dixon Coles Algorithm')
 
             # start training button
             self.trainingbutton = QtWidgets.QPushButton(Dialog)
@@ -276,6 +283,7 @@ def main():
             self.trainAlgo()
             # set the buttons text
             self.trainingbutton.setText('Training finished')
+            print(crawler.fetch_next_matches())
 
         # this will get called when you press the Show results button.
         def resultscall(self):
@@ -287,6 +295,10 @@ def main():
                 self.resultLabel.setText('Results:  ' + self.homecomboBox.currentText() + ' will win')
             else:
                 self.resultLabel.setText('Results:  ' + self.guestcomboBox.currentText() + ' will win')
+        
+        # this will get called when you press the playday button.
+        def playdaycall(self):
+            print(crawler.fetch_next_matches())
 
         def retranslateUi(self, Dialog):
             """Rename all the objects to the desired names.
@@ -298,6 +310,7 @@ def main():
             Dialog.setWindowTitle(_translate('FuBaKI', 'FuBaKI'))
             self.homecomboBox.setItemText(0, _translate('Dialog', '(Select Home Team)'))
             self.crawlerbutton.setText(_translate('Dialog', 'Activate Crawler'))
+            self.playdaybutton.setText(_translate('Dialog', 'Show upcoming matches'))
             self.guestcomboBox.setItemText(0, _translate('Dialog', '(Select Guest Team)'))
             self.StartYearcomboBox.setItemText(0, _translate('Dialog', 'Season'))
             self.StartDaycomboBox.setItemText(0, _translate('Dialog', 'Match Day'))
