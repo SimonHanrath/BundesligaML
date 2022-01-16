@@ -1,13 +1,13 @@
 import sys
 import pandas as pd
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from teamproject import crawler
 from teamproject import data_analytics
 from teamproject.models import BaselineAlgo
 from teamproject.models import DixonColes
 from teamproject.models import PoissonRegression
+
 
 
 def main():
@@ -25,7 +25,8 @@ def main():
             Dialog.setMinimumSize(1355, 841)
             Dialog.resize(1355, 841)
             print(type(Dialog))
-            currentDate = (0,0,0,0)
+            currentData = (0,0,0,0)
+
 
             # create the ok and cancel buttons
             self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
@@ -165,7 +166,7 @@ def main():
 
             # this label will show the results
             self.resultLabel = QtWidgets.QLabel(Dialog)
-            self.resultLabel.setGeometry(QtCore.QRect(410, 780, 371, 31))
+            self.resultLabel.setGeometry(QtCore.QRect(1000, 250, 371, 31))
             self.resultLabel.setObjectName('resultLabel')
 
             # show statistic button
@@ -226,6 +227,7 @@ def main():
             box.addItem(label, None)
             box.model().item(0).setEnabled(False)
 
+
         def crawlercall(self):
             """Gets the data between the chosen timeframe and filters it for the home team and guest team. Then it fills the combobox
             for the home team and guest team with the teams names.
@@ -251,8 +253,8 @@ def main():
             else:
                 self.matchdata = crawler.get_data(
                     fromSeason, fromDay, toSeason, toDay, forceUpdate)
-                self.currentDate = self.matchdata
                 self.teamdata = crawler.get_teams(self.matchdata)
+                self.currentData = self.matchdata
                 teamList = self.teamdata.to_dict('records')
                 for team in teamList:
                     self.homecomboBox.addItem(team['name'], team['ID'])
@@ -263,20 +265,13 @@ def main():
                 self.trainingbutton.setEnabled(True)
             self.crawlerbutton.setEnabled(True)
 
-            # this will get called when you select the home Team.
-            def homeIconCall(self):
-                """
-                """
-                pixmap = QPixmap('image.jpeg')
-                self.homeIcon.setPixmap(pixmap)
-
 
 
         def trainAlgo(self):
             """predicts the winner with the models.py algorithms.
 
              Returns:
-                a string, homeClub or guestClub, depending on the winner
+                a list (float), the win rates
             """
             homeTeamID = self.homecomboBox.currentData()
             guestTeamID = self.guestcomboBox.currentData()
@@ -299,24 +294,16 @@ def main():
                 print(self.matchdata)
                 model = DixonColes(self.matchdata)
                 print('Dixon Coles')
-            
+
             homeTeamName = str(self.homecomboBox.currentText())
             guestTeamName = str(self.guestcomboBox.currentText())
             predictionlist = model.predict(homeTeamName, guestTeamName)
             self.resultsbutton.setEnabled(True)
             self.statisticbutton.setEnabled(True)
 
-            """
-            If predictionlist[0] (which is the home win percentage) is higher then the predictionlist[2] (which is the guest winner percentage),
-            then set set the winner to "homeClub"
-            """
-            if predictionlist[0] > predictionlist[2]:
-                winner = 'homeClub'
-            else:
-                winner = 'guestClub'
-
-            return winner
+            return predictionlist
             self.statisticbutton.setEnabled(True)
+
         # this will get called when you press the Start training button
         def trainingcall(self):
             """
@@ -331,12 +318,12 @@ def main():
         def resultscall(self):
             """
             """
-            winner = self.trainAlgo()
-            # set the result label text to the winner
-            if winner == "homeClub":
-                self.resultLabel.setText('Results:  ' + self.homecomboBox.currentText() + ' will win')
-            else:
-                self.resultLabel.setText('Results:  ' + self.guestcomboBox.currentText() + ' will win')
+            #self.homeIconCall()
+            predictionList = self.trainAlgo()
+            # set the result label text to the win rates
+            self.resultLabel.setText("home: " + str(round(predictionList[0]*100,2)) + "%" + "   "
+                                    + "draw: " + str(round(predictionList[1]*100,2)) + "%" + "   "
+                                    + "guest: " + str(round(predictionList[2]*100,2)) + "%")
         
         # this will get called when you press the playday button.
         def playdaycall(self):
@@ -346,14 +333,25 @@ def main():
             self.playdayLabel.setText(output)
             print(output[1-200])
 
+        # this will get called when you select the home Team.
+        def homeIconCall(self):
+            """
+            """
+            #print("test11")
+            #self.teamdata2 = crawler.get_teams(self.currentData)
+            #print(self.teamdata2['icon'][1])
+            #print("aaa")
+            #print(self.matchdata["homeTeamName"][2])
+            #app = QtGui.QApplication(sys.argv)
+            #svgWidget = QtSvg.QSvgWidget('https://upload.wikimedia.org/wikipedia/commons/d/d3/Logo_1_FC_Kaiserslautern.svg')
+            # pixmap = QPixmap(self.teamdata2['icon'][1])
+            #self.homeIcon.(pixmap)
 
-         # this will get called when you press the Show statistics button.
+        # this will get called when you press the Show statistics button.
         def statisticscall(self):
             """
             """
-            data_analytics.main(self.currentDate,self.homecomboBox.currentText(), self.guestcomboBox.currentText())
-
-
+            data_analytics.main(self.currentData,self.homecomboBox.currentText(), self.guestcomboBox.currentText())
 
         def retranslateUi(self, Dialog):
             """Rename all the objects to the desired names.
@@ -378,7 +376,7 @@ def main():
             self.SelectStartTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the start year and day:</span></p></body></html>'))
             self.SelectAlgoLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the algorithm you want to use:</span></p></body></html>'))
             self.SelectEndTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the end year and day:</span></p></body></html>'))
-            self.resultLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Results:</span></p><p><br/></p></body></html>'))
+            self.resultLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>  </span></p><p><br/></p></body></html>'))
             self.colon.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:31pt;\'> : </span></p><p><br/></p></body></html>'))
             self.statisticbutton.setText(_translate('Dialog','more statistics'))
 

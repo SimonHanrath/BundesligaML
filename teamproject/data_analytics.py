@@ -49,21 +49,21 @@ def main(data, homeClub, guestClub):
     for i in fetchedMatches.index:
         if fetchedMatches["homeScore"][i] > fetchedMatches["guestScore"][i]:
             homeWins = homeWins + 1
-
+    print(homeWins)
 
     # wins by guest team
     guestWins = 0
     for i in fetchedMatches.index:
         if fetchedMatches["homeScore"][i] < fetchedMatches["guestScore"][i]:
             guestWins = guestWins + 1
-
+    print(guestWins)
 
     # draw matches
     drawMatches = 0
     for i in fetchedMatches.index:
         if fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
             drawMatches = drawMatches + 1
-
+    print(drawMatches)
 
     def matchResultsHome(homeClub):
         """matches of each team as homeClub
@@ -314,10 +314,10 @@ def main(data, homeClub, guestClub):
 
         createBar(axes[0][0], "overall Matches by " + homeClub + " as home club", "", " ", ["wins", "loses", "draws"], matchResultsHome(homeClub), max(matchResultsHome(homeClub)))
         createBar(axes[0][1], "overall Matches by " + guestClub + " as guest club","", " ", ["wins", "loses", "draws"], matchResultsGuest(guestClub), max(matchResultsGuest(guestClub)))
-        createBar(axes[1][0], "Results in the past", "", " ",[homeClub, guestClub, "draws"], specificMatches(homeClub, guestClub), max(specificMatches(homeClub, guestClub)))
-        createBar(axes[1][1], "Results in the past", "", " ", [guestClub,homeClub, "draws"], specificMatches(guestClub, homeClub), max(specificMatches(homeClub, guestClub)))
-        createHistogram(axes[2][0], "goals by " + homeClub + " as home club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountHome(homeClub))
-        createHistogram(axes[2][1], "goals by " + guestClub + " as guest club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountGuest(guestClub))
+        createBar(axes[1][0], "Results in the past- " + homeClub +  " as home Club", "", " ",[homeClub, guestClub, "draws"], specificMatches(homeClub, guestClub), max(specificMatches(homeClub, guestClub)))
+        createBar(axes[1][1], "Results in the past- " + guestClub +  " as homeClub", "", " ", [guestClub,homeClub, "draws"], specificMatches(guestClub, homeClub), max(specificMatches(homeClub, guestClub)))
+        createHistogram(axes[2][0], "overall goals by " + homeClub + " as home club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountHome(homeClub))
+        createHistogram(axes[2][1], "overall goals by " + guestClub + " as guest club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountGuest(guestClub))
         pp.show()
 
     statistics(homeClub,guestClub)
