@@ -214,11 +214,8 @@ def parse_match(match: dict) -> dict:
     Returns:
         A dictionary representing details of a single match in internal format.
     """
-    if match['matchResults']:
-        score = {'home': match['matchResults'][0]['pointsTeam1'],
-                 'guest': match['matchResults'][0]['pointsTeam2']}
-    else:
-        score = {'home': None, 'guest': None}
+    score = list(filter(lambda d: d['resultName'] == 'Endergebnis',
+                        match['matchResults']))
     if match['location']:
         loc = {'ID': match['location']['locationID'],
                'city': match['location']['locationCity'],
@@ -238,8 +235,8 @@ def parse_match(match: dict) -> dict:
         'guestTeamName': match['team2']['teamName'],
         'guestTeamIcon': match['team2']['teamIconUrl'],
         'finished': match['matchIsFinished'],
-        'homeScore': score['home'],
-        'guestScore': score['guest'],
+        'homeScore': score[0]['pointsTeam1'] if score else None,
+        'guestScore': score[0]['pointsTeam2'] if score else None,
         'locID': loc['ID'],
         'locCity': loc['city'],
         'locStadium': loc['stadium']
