@@ -1,6 +1,14 @@
 import sys
+import urllib.request
+
 import pandas as pd
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PIL import Image
+from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
+from PyQt5.QtSvg import QSvgWidget
+# -*- coding: utf-8 -*-
+#from svglib.svglib import svg2rlg
+#from reportlab.graphics import renderPM
+
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from teamproject import crawler
 from teamproject import data_analytics
@@ -43,7 +51,7 @@ def main():
 
             # select the Algo label, to change the text have a look at the retranslateUI funktion
             self.playdayLabel = QtWidgets.QLabel(Dialog)
-            self.playdayLabel.setGeometry(QtCore.QRect(830, 90, 471, 431))
+            self.playdayLabel.setGeometry(QtCore.QRect(950, 30, 323, 590))
             self.playdayLabel.setObjectName('playdayLabel')
 
 
@@ -54,7 +62,7 @@ def main():
 
             # Algocombobox: Select the algorithm you want to use
             self.algocomboBox = QtWidgets.QComboBox(Dialog)
-            self.algocomboBox.setGeometry(QtCore.QRect(60, 90, 301, 60))
+            self.algocomboBox.setGeometry(QtCore.QRect(40, 90, 301, 60))
             self.algocomboBox.setObjectName('algocomboBox')
             self.algocomboBox.addItem('Baseline Algorithm')
             self.algocomboBox.addItem('Poisson Regression Algorithm')
@@ -109,7 +117,7 @@ def main():
 
             # activate crawler Button
             self.crawlerbutton = QtWidgets.QPushButton(Dialog)
-            self.crawlerbutton.setGeometry(QtCore.QRect(50, 350, 331, 101))
+            self.crawlerbutton.setGeometry(QtCore.QRect(40, 350, 331, 101))
             self.crawlerbutton.setObjectName('Activate Crawler')
             self.crawlerbutton.clicked.connect(self.crawlercall)
 
@@ -120,7 +128,7 @@ def main():
 
             # the combobox to select the home team
             self.homecomboBox = QtWidgets.QComboBox(Dialog)
-            self.homecomboBox.setGeometry(QtCore.QRect(60, 530, 301, 61))
+            self.homecomboBox.setGeometry(QtCore.QRect(40, 530, 301, 61))
             self.homecomboBox.setObjectName('homecomboBox')
             self.homecomboBox.setEnabled(False)
             self.homecomboBox.addItem('SelectHomeTeamLabel')
@@ -141,8 +149,15 @@ def main():
 
             # A label that shows home Team Icon
             self.homeIcon = QtWidgets.QLabel(Dialog)
-            self.homeIcon.setGeometry(QtCore.QRect(1050, 180, 20, 61))
+            self.homeIcon.setGeometry(980,150, 100, 100)
             self.homeIcon.setObjectName('homeIcon')
+            self.homeIcon.setText("")
+
+            # A label that shows guest Team Icon
+            self.guestIcon = QtWidgets.QLabel(Dialog)
+            self.guestIcon.setGeometry(1130, 150, 100, 100)
+            self.guestIcon.setObjectName('guestIcon')
+            self.guestIcon.setText("")
 
             # select the Algo label, to change the text have a look at the retranslateUI funktion
             self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
@@ -318,7 +333,8 @@ def main():
         def resultscall(self):
             """
             """
-            #self.homeIconCall()
+            self.homeIconCall()
+            self.guestIconCall()
             predictionList = self.trainAlgo()
             # set the result label text to the win rates
             self.resultLabel.setText("home: " + str(round(predictionList[0]*100,2)) + "%" + "   "
@@ -333,19 +349,25 @@ def main():
             self.playdayLabel.setText(output)
             print(output[1-200])
 
-        # this will get called when you select the home Team.
+        # this will get called when you select the guest Team.
+        def guestIconCall(self):
+            """
+            """
+            self.teamdata2 = crawler.get_teams(self.currentData)
+            icon = self.teamdata2.loc[self.teamdata2['name'] == self.guestcomboBox.currentText(),'icon'].values[0]
+            urllib.request.urlretrieve(icon,"guestIcon.png")
+            pixmap = QtGui.QPixmap("guestIcon.png")
+            self.guestIcon.setPixmap(pixmap.scaled(100, 100))
+
+            # this will get called when you select the home Team.
         def homeIconCall(self):
             """
             """
-            #print("test11")
-            #self.teamdata2 = crawler.get_teams(self.currentData)
-            #print(self.teamdata2['icon'][1])
-            #print("aaa")
-            #print(self.matchdata["homeTeamName"][2])
-            #app = QtGui.QApplication(sys.argv)
-            #svgWidget = QtSvg.QSvgWidget('https://upload.wikimedia.org/wikipedia/commons/d/d3/Logo_1_FC_Kaiserslautern.svg')
-            # pixmap = QPixmap(self.teamdata2['icon'][1])
-            #self.homeIcon.(pixmap)
+            self.teamdata2 = crawler.get_teams(self.currentData)
+            icon = self.teamdata2.loc[self.teamdata2['name'] == self.homecomboBox.currentText(), 'icon'].values[0]
+            urllib.request.urlretrieve(icon, "homeIcon.png")
+            pixmap = QtGui.QPixmap("homeIcon.png")
+            self.homeIcon.setPixmap(pixmap.scaled(100, 100))
 
         # this will get called when you press the Show statistics button.
         def statisticscall(self):
@@ -372,13 +394,14 @@ def main():
             self.forceUpdateLabel.setText(_translate('Dialog', 'force re-caching'))
             self.resultsbutton.setText(_translate('Dialog', 'Show results'))
             self.trainingbutton.setText(_translate('Dialog', 'Start training'))
+            self.statisticbutton.setText(_translate('Dialog','more statistics'))
             self.SelectTeamLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the home team and the guest team:</span></p></body></html>'))
             self.SelectStartTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the start year and day:</span></p></body></html>'))
             self.SelectAlgoLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the algorithm you want to use:</span></p></body></html>'))
             self.SelectEndTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the end year and day:</span></p></body></html>'))
             self.resultLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>  </span></p><p><br/></p></body></html>'))
             self.colon.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:31pt;\'> : </span></p><p><br/></p></body></html>'))
-            self.statisticbutton.setText(_translate('Dialog','more statistics'))
+
 
     # create the window
     app = QtWidgets.QApplication(sys.argv)
