@@ -43,7 +43,7 @@ def main():
 
             # select the Algo label, to change the text have a look at the retranslateUI funktion
             self.playdayLabel = QtWidgets.QLabel(Dialog)
-            self.playdayLabel.setGeometry(QtCore.QRect(830, 90, 471, 431))
+            self.playdayLabel.setGeometry(QtCore.QRect(830, 0, 671, 231))
             self.playdayLabel.setObjectName('playdayLabel')
 
 
@@ -327,10 +327,14 @@ def main():
         
         # this will get called when you press the playday button.
         def playdaycall(self):
+            print(self.next['season'].to_string() + self.next['datetime'].to_string())
             print(self.next)
             output = self.next.to_string()
+            list = self.next.to_dict('records')
+            print(list)
             #self.playdayLabel.setText(self.next['datetime'].to_string + self.next['homeTeamName'].to_string + self.next['guestTeamName'].to_string)
-            self.playdayLabel.setText(output)
+            self.playdayLabel.setText(self.next['season'].to_string(index=False)+"  " + self.next['datetime'].to_string(index=False)+"  " + 
+            self.next['homeTeamName'].to_string(index=False)+"   vs   " + self.next['guestTeamName'].to_string(index=False))
             print(output[1-200])
 
         # this will get called when you select the home Team.
