@@ -117,6 +117,7 @@ def fetch_avail_matchdays():
     leagues.insert(0, 'action', 'getavailablegroups')
     queries = leagues.to_dict('records')
     responses = asyncio.run(fetch_queries(queries))
+    print(responses)
     matchdays = [{
         'season': res['params']['season'],
         'availMatchdays':
@@ -146,7 +147,7 @@ def fetch_next_matches():
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
     data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
-    data = data[data['datetimeUTC'] == data['datetimeUTC'].min()]
+    data = data[data['datetimeUTC'] == data['datetimeUTC'].min()] # TO-DO: letzte/nächste Spieltage (nicht Uhrzeit)
     data['finished'] = True
     store_matchdata('next', data)
 
