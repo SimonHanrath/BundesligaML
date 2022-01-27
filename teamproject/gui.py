@@ -32,7 +32,6 @@ def main():
             """
             Dialog.setMinimumSize(1355, 841)
             Dialog.resize(1355, 841)
-            print(type(Dialog))
             currentData = (0,0,0,0)
 
 
@@ -42,7 +41,7 @@ def main():
             self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
             self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
             self.buttonBox.setObjectName('buttonBox')
-            
+
             # create a button to show the upcoming playday
             self.playdaybutton = QtWidgets.QPushButton(Dialog)
             self.playdaybutton.setGeometry(QtCore.QRect(550, 90, 230, 60))
@@ -327,7 +326,7 @@ def main():
             self.trainAlgo()
             # set the buttons text
             self.trainingbutton.setText('Training finished')
-            print(crawler.fetch_next_matches())
+
 
         # this will get called when you press the Show results button.
         def resultscall(self):
@@ -340,7 +339,7 @@ def main():
             self.resultLabel.setText("home: " + str(round(predictionList[0]*100,2)) + "%" + "   "
                                     + "draw: " + str(round(predictionList[1]*100,2)) + "%" + "   "
                                     + "guest: " + str(round(predictionList[2]*100,2)) + "%")
-        
+
         # this will get called when you press the playday button.
         def playdaycall(self):
             print(self.next['season'].to_string() + self.next['datetime'].to_string())
@@ -349,7 +348,7 @@ def main():
             list = self.next.to_dict('records')
             print(list)
             #self.playdayLabel.setText(self.next['datetime'].to_string + self.next['homeTeamName'].to_string + self.next['guestTeamName'].to_string)
-            self.playdayLabel.setText(self.next['season'].to_string(index=False)+"  " + self.next['datetime'].to_string(index=False)+"  " + 
+            self.playdayLabel.setText(self.next['season'].to_string(index=False)+"  " + self.next['datetime'].to_string(index=False)+"  " +
             self.next['homeTeamName'].to_string(index=False)+"   vs   " + self.next['guestTeamName'].to_string(index=False))
             print(output[1-200])
 
