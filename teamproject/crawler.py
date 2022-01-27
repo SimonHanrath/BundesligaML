@@ -147,7 +147,7 @@ def fetch_next_matches():
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
     data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
-    data = data[data['datetimeUTC'] == data['datetimeUTC'].min()] # TO-DO: letzte/nächste Spieltage (nicht Uhrzeit)
+    data = data[data['datetimeUTC'].dt.day == data['datetimeUTC'].dt.day.min()]
     data['finished'] = True
     store_matchdata('next', data)
 
