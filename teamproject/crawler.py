@@ -95,8 +95,8 @@ def fetch_avail_seasons():
     leagues = [{'IDs': resp['leagueId'], 'season': int(resp['leagueSeason']),
                 'division': resp['leagueShortcut']}
                for resp in responses[0]['response']
-               if resp['leagueShortcut'] in g_divisions]
-    leagues = [lg for lg in leagues if lg['season'] >= g_season_lower_limit]
+               if (resp['leagueShortcut'] in g_divisions)]
+    leagues = filter(lambda l: l['season'] >= g_season_lower_limit, leagues)
     avail = pd.DataFrame(leagues).sort_values(['season', 'division'])
     avail = avail.groupby('season').agg(list).reset_index()
     cols = ['availMatchdays', 'cached', 'cachedMatchdays', 'cachedDatetime']
@@ -117,6 +117,7 @@ def fetch_avail_matchdays():
     leagues.insert(0, 'action', 'getavailablegroups')
     queries = leagues.to_dict('records')
     responses = asyncio.run(fetch_queries(queries))
+    print(responses)
     matchdays = [{
         'season': res['params']['season'],
         'availMatchdays':
@@ -146,8 +147,7 @@ def fetch_next_matches():
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
     data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
-    data = data[data['datetimeUTC'].dt.day == data['datetimeUTC'].dt.day.min()]
-    data.sort_values('datetimeUTC', inplace=True)
+    data = data[data['datetimeUTC'] == data['datetimeUTC'].min()] # TO-DO: letzte/nächste Spieltage (nicht Uhrzeit)
     data['finished'] = True
     store_matchdata('next', data)
 
@@ -215,8 +215,8 @@ def parse_match(match: dict) -> dict:
     Returns:
         A dictionary representing details of a single match in internal format.
     """
-    score = [result for result in match['matchResults']
-             if result['resultName'] == 'Endergebnis']
+    score = list(filter(lambda d: d['resultName'] == 'Endergebnis',
+                        match['matchResults']))
     if match['location']:
         loc = {'ID': match['location']['locationID'],
                'city': match['location']['locationCity'],
