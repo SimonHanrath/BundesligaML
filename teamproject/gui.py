@@ -332,7 +332,7 @@ def main():
             """
             """
             guestIcon = self.teamdata.loc[self.teamdata['ID'] == self.selectGuestTeam.currentData(), 'icon'].values[0]
-            guestIconPath = f'{crawler.g_cache_path}/homeIcon.png'
+            guestIconPath = f'{crawler.g_cache_path}/guestIcon.png'
             urllib.request.urlretrieve(guestIcon, guestIconPath)
             pixmap = QtGui.QPixmap(guestIconPath)
             self.guestIcon.setPixmap(pixmap.scaled(100, 100))
