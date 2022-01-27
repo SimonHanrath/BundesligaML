@@ -117,7 +117,7 @@ def fetch_avail_matchdays():
     leagues.insert(0, 'action', 'getavailablegroups')
     queries = leagues.to_dict('records')
     responses = asyncio.run(fetch_queries(queries))
-    print(responses)
+    #print(responses)
     matchdays = [{
         'season': res['params']['season'],
         'availMatchdays':
