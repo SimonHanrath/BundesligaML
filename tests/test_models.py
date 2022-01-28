@@ -18,7 +18,8 @@ epl_1718 = epl_1718[['HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR', 'date']]
 epl_1718 = epl_1718.rename(columns={'HomeTeam': 'homeTeamName',
                                     'AwayTeam': 'guestTeamName',
                                     'FTHG': 'homeScore',
-                                    'FTAG': 'guestScore'})
+                                    'FTAG': 'guestScore',
+                                    'date': 'datetime'})
 
 
 # It is important to test your algorithms against handcrafted data to reliably

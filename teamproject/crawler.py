@@ -73,7 +73,7 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     homeTeams.set_axis(cols, axis=1, inplace=True)
     guestTeams.set_axis(cols, axis=1, inplace=True)
     teams = pd.concat([homeTeams, guestTeams], ignore_index=True)
-    teams = teams.drop_duplicates().sort_values('name')
+    teams = teams.drop_duplicates(subset=['name']).sort_values('name')
     teams.reset_index(drop=True, inplace=True)
     return teams
 
@@ -117,7 +117,7 @@ def fetch_avail_matchdays():
     leagues.insert(0, 'action', 'getavailablegroups')
     queries = leagues.to_dict('records')
     responses = asyncio.run(fetch_queries(queries))
-    print(responses)
+    # print(responses)
     matchdays = [{
         'season': res['params']['season'],
         'availMatchdays':
@@ -147,7 +147,14 @@ def fetch_next_matches():
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
     data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
-    data = data[data['datetimeUTC'] == data['datetimeUTC'].min()] # TO-DO: letzte/nächste Spieltage (nicht Uhrzeit)
+    mon = (data['datetimeUTC'].dt.month == data['datetimeUTC'].dt.month.min())
+    day = (data['datetimeUTC'].dt.day == data['datetimeUTC'].dt.day.min())
+    nextMatchDay = data[mon & day]
+    if len(nextMatchDay) > 4:
+        data = nextMatchDay
+    else:
+        data = data[0:15]
+    data = data.sort_values(['datetimeUTC', 'division']).reset_index()
     data['finished'] = True
     store_matchdata('next', data)
 
