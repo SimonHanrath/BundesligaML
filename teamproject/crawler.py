@@ -147,8 +147,13 @@ def fetch_next_matches():
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
     data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
-    data = data[data['datetimeUTC'].dt.month == data['datetimeUTC'].dt.month.min()]
-    data = data[data['datetimeUTC'].dt.day == data['datetimeUTC'].dt.day.min()]
+    mon = (data['datetimeUTC'].dt.month == data['datetimeUTC'].dt.month.min())
+    day = (data['datetimeUTC'].dt.day == data['datetimeUTC'].dt.day.min())
+    nextMatchDay = data[mon & day]
+    if len(nextMatchDay) > 4:
+        data = nextMatchDay
+    else:
+        data = data[0:15]
     data = data.sort_values(['datetimeUTC', 'division']).reset_index()
     data['finished'] = True
     store_matchdata('next', data)
