@@ -18,18 +18,20 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QCheckBox,
     QTableWidget,
-    QTableWidgetItem
+    QTableWidgetItem,
+    QStyleFactory
 )
 from teamproject import crawler, data_analytics, models
 
 
 class FuBaKI(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super(FuBaKI, self).__init__()
         self.setWindowTitle("FuBaKI")
         self.initUI()
         # self.retranslateUI()
         self.resize(1000, 800)
+        QApplication.setStyle(QStyleFactory.create('Fusion'))
 
     def initUI(self):
         buttonHeight = 50
@@ -66,9 +68,7 @@ class FuBaKI(QWidget):
         self.selectToDay.setEnabled(False)
         self.selectToDay.addItem('Match Day')
         self.reset_items(self.selectToDay)
-        self.intvForceUpdateLabel = QLabel('force re-caching')
-        self.intvForceUpdateLabel.mousePressEvent = self.toggle_force_update
-        self.intvForceUpdate = QCheckBox()
+        self.intvForceUpdate = QCheckBox('force re-caching')
         intvLayout = QHBoxLayout()
         intvLayout.addWidget(self.selectFromLabel)
         intvLayout.addWidget(self.selectFromSeason, 1)
@@ -84,7 +84,6 @@ class FuBaKI(QWidget):
 
         recacheLayout = QHBoxLayout()
         recacheLayout.addWidget(self.intvForceUpdate)
-        recacheLayout.addWidget(self.intvForceUpdateLabel)
         recacheLayout.addSpacing(25)
         recacheLayout.addWidget(self.crawlerButton, 1)
         recacheLayout.addStretch(2)
@@ -193,7 +192,7 @@ class FuBaKI(QWidget):
         self.setLayout(ui)
 
         # load available data
-        #crawler.refresh_ui_cache() TO-DO
+        crawler.refresh_ui_cache()
         self.avail = crawler.load_cache_index()
         self.next = crawler.load_matchdata('next')
 
@@ -264,11 +263,6 @@ class FuBaKI(QWidget):
         box.clear()
         box.addItem(label, None)
         box.model().item(0).setEnabled(False)
-
-    def toggle_force_update(self, event):
-        if event.type() == QtCore.QEvent.MouseButtonPress:
-            state = self.intvForceUpdate.isChecked()
-            self.intvForceUpdate.setChecked(not state)
 
     def select_teams(self):
         """
@@ -418,8 +412,28 @@ class FuBaKI(QWidget):
         self.colon.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:31pt;\'> : </span></p><p><br/></p></body></html>'))
 
 
+styleSheet = """
+QLabel {
+    color: rgb(55,65,74);
+} QPushButton {
+    background: rgb(112,128,144);
+    border: none;
+    border-radius: 3px;
+    color: rgb(255,255,255);
+    font-weight: bold;
+    padding: 5px 10px;
+} QPushButton:pressed {
+    background: rgb(55,65,74);
+    border: 1px solid rgb(255,255,255);
+} QPushButton:disabled {
+    background: rgba(112,128,144,0.5);
+}
+"""
+
+
 def main():
     app = QApplication(sys.argv)
+    app.setStyleSheet(styleSheet)
     window = FuBaKI()
     window.show()
     sys.exit(app.exec_())
