@@ -73,7 +73,7 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     homeTeams.set_axis(cols, axis=1, inplace=True)
     guestTeams.set_axis(cols, axis=1, inplace=True)
     teams = pd.concat([homeTeams, guestTeams], ignore_index=True)
-    teams = teams.drop_duplicates().sort_values('name')
+    teams = teams.drop_duplicates(subset=['name']).sort_values('name')
     teams.reset_index(drop=True, inplace=True)
     return teams
 
@@ -147,7 +147,9 @@ def fetch_next_matches():
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
     data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
+    data = data[data['datetimeUTC'].dt.month == data['datetimeUTC'].dt.month.min()]
     data = data[data['datetimeUTC'].dt.day == data['datetimeUTC'].dt.day.min()]
+    data = data.sort_values(['datetimeUTC', 'division']).reset_index()
     data['finished'] = True
     store_matchdata('next', data)
 
