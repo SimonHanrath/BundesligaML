@@ -41,6 +41,7 @@ def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
     # fetch data if necessary
     seasons['action'] = 'getmatchdata'
     leagues = seasons.explode('division')[['action', 'division', 'season']]
+    leagues = leagues[leagues['division'].isin(g_divisions)]
     responses = asyncio.run(fetch_queries(leagues.to_dict('records')))
     for key, val in groupby(responses, key=lambda d: d['params']['season']):
         frames = map(lambda d: parse_league(d['response']), val)

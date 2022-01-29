@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 import sys
 import urllib.request
 from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
 from PyQt5.QtSvg import QSvgWidget
-# -*- coding: utf-8 -*-
 # from svglib.svglib import svg2rlg
 # from reportlab.graphics import renderPM
 from PyQt5.QtWidgets import (
@@ -30,11 +30,11 @@ class FuBaKI(QWidget):
         self.setWindowTitle("FuBaKI")
         self.initUI()
         # self.retranslateUI()
-        self.resize(1000, 800)
+        self.resize(1000, 700)
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
     def initUI(self):
-        buttonHeight = 50
+        buttonHeight = 30
 
         self.selectAlgoLabel = QLabel('Select desired prediction algorithm:')
         self.selectAlgo = QComboBox()
@@ -151,6 +151,7 @@ class FuBaKI(QWidget):
         leftUILayout.addStretch(3)
         leftUILayout.addWidget(self.intvLabel)
         leftUILayout.addLayout(intvLayout)
+        leftUILayout.addSpacing(5)
         leftUILayout.addLayout(recacheLayout)
         leftUILayout.addStretch(1)
         leftUILayout.addLayout(trainingLayout)
@@ -177,6 +178,7 @@ class FuBaKI(QWidget):
         self.nextMatches.setColumnWidth(1, 150)
         self.nextMatches.setColumnWidth(2, 150)
         header = self.nextMatches.horizontalHeader()
+        header.setHighlightSections(False)
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
@@ -289,6 +291,7 @@ class FuBaKI(QWidget):
         self.selectGuestTeam.setEnabled(False)
         self.trainingButton.setEnabled(False)
         self.predictButton.setEnabled(False)
+        self.statisticButton.setEnabled(False)
         self.reset_items(self.selectHomeTeam)
         self.reset_items(self.selectGuestTeam)
         fromSeason = self.selectFromSeason.currentData()
@@ -349,9 +352,9 @@ class FuBaKI(QWidget):
         homeTeamName = str(self.selectHomeTeam.currentText())
         guestTeamName = str(self.selectGuestTeam.currentText())
         predictionList = self.model.predict(homeTeamName, guestTeamName)
-        self.resultLabel.setText(f'home: {str(round(predictionList[0]*100, 2))} %   '
-                                 + f'draw: {str(round(predictionList[1]*100, 2))} %   '
-                                 + f'guest: {str(round(predictionList[2]*100, 2))} %')
+        self.resultLabel.setText(f'home: {str(round(predictionList[0]*100, 2))}%   '
+                                 + f'draw: {str(round(predictionList[1]*100, 2))}%   '
+                                 + f'guest: {str(round(predictionList[2]*100, 2))}%')
 
     def guestIconCall(self):
         """
@@ -385,7 +388,6 @@ class FuBaKI(QWidget):
         elif homeTeamID == guestTeamID:
             QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and guest teams.')
             return  # exit function
-
         data_analytics.main(self.matchdata, self.selectHomeTeam.currentText(), self.selectGuestTeam.currentText())
 
     def retranslateUI(self):
@@ -422,11 +424,15 @@ QLabel {
     color: rgb(255,255,255);
     font-weight: bold;
     padding: 5px 10px;
+} QPushButton:hover {
+    background: rgb(119,136,153);
 } QPushButton:pressed {
     background: rgb(55,65,74);
     border: 1px solid rgb(255,255,255);
 } QPushButton:disabled {
     background: rgba(112,128,144,0.5);
+} QHeaderView {
+    color: rgb(55,65,74);
 }
 """
 
