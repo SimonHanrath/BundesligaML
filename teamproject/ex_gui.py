@@ -34,11 +34,8 @@ class FuBaKI(QWidget):
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
     def initUI(self):
-        buttonHeight = 30
-
         self.selectAlgoLabel = QLabel('Select desired prediction algorithm:')
         self.selectAlgo = QComboBox()
-        self.selectAlgo.setMinimumHeight(buttonHeight)
         self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
         self.selectAlgo.addItem('Poisson Regression', 'poisson')
         self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
@@ -50,21 +47,17 @@ class FuBaKI(QWidget):
         self.intvLabel = QLabel('Specify the interval of training data:')
         self.selectFromLabel = QLabel('From')
         self.selectFromSeason = QComboBox()
-        self.selectFromSeason.setMinimumHeight(buttonHeight)
         self.selectFromSeason.addItem('Season')
         self.reset_items(self.selectFromSeason)
         self.selectFromDay = QComboBox()
-        self.selectFromDay.setMinimumHeight(buttonHeight)
         self.selectFromDay.setEnabled(False)
         self.selectFromDay.addItem('Match Day')
         self.reset_items(self.selectFromDay)
         self.selectToLabel = QLabel('To')
         self.selectToSeason = QComboBox()
-        self.selectToSeason.setMinimumHeight(buttonHeight)
         self.selectToSeason.addItem('Season')
         self.reset_items(self.selectToSeason)
         self.selectToDay = QComboBox()
-        self.selectToDay.setMinimumHeight(buttonHeight)
         self.selectToDay.setEnabled(False)
         self.selectToDay.addItem('Match Day')
         self.reset_items(self.selectToDay)
@@ -80,7 +73,6 @@ class FuBaKI(QWidget):
 
         self.crawlerButton = QPushButton('Fetch Data')
         self.crawlerButton.clicked.connect(self.crawlercall)
-        self.crawlerButton.setMinimumHeight(buttonHeight)
 
         recacheLayout = QHBoxLayout()
         recacheLayout.addWidget(self.intvForceUpdate)
@@ -91,25 +83,21 @@ class FuBaKI(QWidget):
         self.trainingButton = QPushButton('Start Training')
         self.trainingButton.setEnabled(False)
         self.trainingButton.clicked.connect(self.trainingcall)
-        self.trainingButton.setMinimumHeight(buttonHeight)
         trainingLayout = QHBoxLayout()
         trainingLayout.addWidget(self.trainingButton, 1)
         trainingLayout.addStretch(2)
 
         self.selectTeamsLabel = QLabel('Pick teams for prediction:')
         self.selectHomeTeam = QComboBox()
-        self.selectHomeTeam.setMinimumHeight(buttonHeight)
         self.selectHomeTeam.setEnabled(False)
         self.selectHomeTeam.addItem('Home Team')
         self.reset_items(self.selectHomeTeam)
         self.selectGuestTeam = QComboBox()
-        self.selectGuestTeam.setMinimumHeight(buttonHeight)
         self.selectGuestTeam.setEnabled(False)
         self.selectGuestTeam.addItem('Guest Team')
         self.reset_items(self.selectGuestTeam)
         self.predictButton = QPushButton('Show Results')
         self.predictButton.clicked.connect(self.resultscall)
-        self.predictButton.setMinimumHeight(buttonHeight)
         self.predictButton.setEnabled(False)
         predictLayout = QHBoxLayout()
         predictLayout.addWidget(self.selectHomeTeam, 2)
@@ -139,7 +127,6 @@ class FuBaKI(QWidget):
 
         self.statisticButton = QPushButton('More Statistics…')
         self.statisticButton.clicked.connect(self.statisticscall)
-        self.statisticButton.setMinimumHeight(buttonHeight)
         self.statisticButton.setEnabled(False)
         statisticLayout = QHBoxLayout()
         statisticLayout.addWidget(self.statisticButton, 1)
@@ -166,6 +153,7 @@ class FuBaKI(QWidget):
 
         self.nextMatchesLabel = QLabel('Upcoming matches:')
         self.nextMatches = QTableWidget()
+        self.nextMatches.setMinimumWidth(250)
         self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
         self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.nextMatches.doubleClicked.connect(self.select_teams)
@@ -181,8 +169,8 @@ class FuBaKI(QWidget):
         header.setHighlightSections(False)
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)  #Stretch
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         nextLayout = QVBoxLayout()
         nextLayout.addWidget(self.nextMatchesLabel)
         nextLayout.addWidget(self.nextMatches)
@@ -423,7 +411,7 @@ QLabel {
     border-radius: 3px;
     color: rgb(255,255,255);
     font-weight: bold;
-    padding: 5px 10px;
+    padding: 7px 10px;
 } QPushButton:hover {
     background: rgb(119,136,153);
 } QPushButton:pressed {
