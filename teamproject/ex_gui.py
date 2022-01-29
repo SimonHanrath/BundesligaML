@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
     QWidget,
+    QShortcut,
     QMessageBox,
     QHBoxLayout,
     QVBoxLayout,
@@ -34,15 +35,17 @@ class FuBaKI(QWidget):
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
     def initUI(self):
+        self.shortcutQuit = QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.shortcutQuit.activated.connect(self.close)
+        self.shortcutClose = QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
+        self.shortcutClose.activated.connect(self.close)
+
         self.selectAlgoLabel = QLabel('Select desired prediction algorithm:')
         self.selectAlgo = QComboBox()
         self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
         self.selectAlgo.addItem('Poisson Regression', 'poisson')
         self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
         self.selectAlgo.currentIndexChanged.connect(self.change_algo)
-        algoLayout = QHBoxLayout()
-        algoLayout.addWidget(self.selectAlgo, 1)
-        algoLayout.addStretch(2)
 
         self.intvLabel = QLabel('Specify the interval of training data:')
         self.selectFromLabel = QLabel('From')
@@ -62,30 +65,12 @@ class FuBaKI(QWidget):
         self.selectToDay.addItem('Match Day')
         self.reset_items(self.selectToDay)
         self.intvForceUpdate = QCheckBox('force re-caching')
-        intvLayout = QHBoxLayout()
-        intvLayout.addWidget(self.selectFromLabel)
-        intvLayout.addWidget(self.selectFromSeason, 1)
-        intvLayout.addWidget(self.selectFromDay, 1)
-        intvLayout.addSpacing(25)
-        intvLayout.addWidget(self.selectToLabel)
-        intvLayout.addWidget(self.selectToSeason, 1)
-        intvLayout.addWidget(self.selectToDay, 1)
-
         self.crawlerButton = QPushButton('Fetch Data')
         self.crawlerButton.clicked.connect(self.crawlercall)
-
-        recacheLayout = QHBoxLayout()
-        recacheLayout.addWidget(self.intvForceUpdate)
-        recacheLayout.addSpacing(25)
-        recacheLayout.addWidget(self.crawlerButton, 1)
-        recacheLayout.addStretch(2)
 
         self.trainingButton = QPushButton('Start Training')
         self.trainingButton.setEnabled(False)
         self.trainingButton.clicked.connect(self.trainingcall)
-        trainingLayout = QHBoxLayout()
-        trainingLayout.addWidget(self.trainingButton, 1)
-        trainingLayout.addStretch(2)
 
         self.selectTeamsLabel = QLabel('Pick teams for prediction:')
         self.selectHomeTeam = QComboBox()
@@ -99,17 +84,57 @@ class FuBaKI(QWidget):
         self.predictButton = QPushButton('Show Results')
         self.predictButton.clicked.connect(self.resultscall)
         self.predictButton.setEnabled(False)
-        predictLayout = QHBoxLayout()
-        predictLayout.addWidget(self.selectHomeTeam, 2)
-        predictLayout.addWidget(self.selectGuestTeam, 2)
-        predictLayout.addSpacing(25)
-        predictLayout.addWidget(self.predictButton, 1)
 
         self.colon = QLabel()
         font = QtGui.QFont('Times New Roman', 35, weight=QtGui.QFont.Bold)
         self.colon.setFont(font)
         self.homeIcon = QLabel()
         self.guestIcon = QLabel()
+        self.resultLabel = QLabel()
+        self.statisticButton = QPushButton('More Statistics…')
+        self.statisticButton.clicked.connect(self.statisticscall)
+        self.statisticButton.setEnabled(False)
+
+        self.nextMatchesLabel = QLabel('Upcoming matches:')
+        self.nextMatches = QTableWidget()
+        self.nextMatches.setMinimumWidth(250)
+        self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.nextMatches.doubleClicked.connect(self.select_teams)
+        # self.nextMatches.setFont(QtGui.QFont('Arial', 8))
+        self.nextMatches.setColumnCount(3)
+        self.nextMatches.verticalHeader().setVisible(False)
+        columnLabels = ['Date', 'Home Team', 'Guest Team']
+        self.nextMatches.setHorizontalHeaderLabels(columnLabels)
+        self.nextMatches.setColumnWidth(0, 50)
+        self.nextMatches.setColumnWidth(1, 150)
+        self.nextMatches.setColumnWidth(2, 150)
+        header = self.nextMatches.horizontalHeader()
+        header.setHighlightSections(False)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+
+        algoLayout = QHBoxLayout()
+        algoLayout.addWidget(self.selectAlgo, 1)
+        algoLayout.addStretch(2)
+        intvLayout = QHBoxLayout()
+        intvLayout.addWidget(self.selectFromLabel)
+        intvLayout.addWidget(self.selectFromSeason, 1)
+        intvLayout.addWidget(self.selectFromDay, 1)
+        intvLayout.addSpacing(25)
+        intvLayout.addWidget(self.selectToLabel)
+        intvLayout.addWidget(self.selectToSeason, 1)
+        intvLayout.addWidget(self.selectToDay, 1)
+        recacheLayout = QHBoxLayout()
+        recacheLayout.addWidget(self.intvForceUpdate)
+        recacheLayout.addSpacing(25)
+        recacheLayout.addWidget(self.crawlerButton, 1)
+        recacheLayout.addStretch(2)
+        trainingLayout = QHBoxLayout()
+        trainingLayout.addWidget(self.trainingButton, 1)
+        trainingLayout.addStretch(2)
         iconLayout = QHBoxLayout()
         iconLayout.addStretch(1)
         iconLayout.addWidget(self.homeIcon)
@@ -118,16 +143,15 @@ class FuBaKI(QWidget):
         iconLayout.addSpacing(10)
         iconLayout.addWidget(self.guestIcon)
         iconLayout.addStretch(3)
-
-        self.resultLabel = QLabel()
+        predictLayout = QHBoxLayout()
+        predictLayout.addWidget(self.selectHomeTeam, 2)
+        predictLayout.addWidget(self.selectGuestTeam, 2)
+        predictLayout.addSpacing(25)
+        predictLayout.addWidget(self.predictButton, 1)
         resultLayout = QHBoxLayout()
         resultLayout.addStretch(1)
         resultLayout.addWidget(self.resultLabel)
         resultLayout.addStretch(4)
-
-        self.statisticButton = QPushButton('More Statistics…')
-        self.statisticButton.clicked.connect(self.statisticscall)
-        self.statisticButton.setEnabled(False)
         statisticLayout = QHBoxLayout()
         statisticLayout.addWidget(self.statisticButton, 1)
         statisticLayout.addStretch(2)
@@ -150,35 +174,14 @@ class FuBaKI(QWidget):
         leftUILayout.addLayout(resultLayout)
         leftUILayout.addStretch(1)
         leftUILayout.addLayout(statisticLayout)
-
-        self.nextMatchesLabel = QLabel('Upcoming matches:')
-        self.nextMatches = QTableWidget()
-        self.nextMatches.setMinimumWidth(250)
-        self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.nextMatches.doubleClicked.connect(self.select_teams)
-        self.nextMatches.setFont(QtGui.QFont('Arial', 8))
-        self.nextMatches.setColumnCount(3)
-        self.nextMatches.verticalHeader().setVisible(False)
-        columnLabels = ['Date', 'Home Team', 'Guest Team']
-        self.nextMatches.setHorizontalHeaderLabels(columnLabels)
-        self.nextMatches.setColumnWidth(0, 50)
-        self.nextMatches.setColumnWidth(1, 150)
-        self.nextMatches.setColumnWidth(2, 150)
-        header = self.nextMatches.horizontalHeader()
-        header.setHighlightSections(False)
-        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        nextLayout = QVBoxLayout()
-        nextLayout.addWidget(self.nextMatchesLabel)
-        nextLayout.addWidget(self.nextMatches)
+        rightLayout = QVBoxLayout()
+        rightLayout.addWidget(self.nextMatchesLabel)
+        rightLayout.addWidget(self.nextMatches)
 
         ui = QHBoxLayout()
         ui.addLayout(leftUILayout, 2)
         ui.addSpacing(50)
-        ui.addLayout(nextLayout, 1)
+        ui.addLayout(rightLayout, 1)
         self.setLayout(ui)
 
         # load available data
@@ -403,7 +406,7 @@ class FuBaKI(QWidget):
 
 
 styleSheet = """
-QLabel {
+QLabel, QHeaderView, QTableView {
     color: rgb(55,65,74);
 } QPushButton {
     background: rgb(112,128,144);
@@ -419,8 +422,8 @@ QLabel {
     border: 1px solid rgb(255,255,255);
 } QPushButton:disabled {
     background: rgba(112,128,144,0.5);
-} QHeaderView {
-    color: rgb(55,65,74);
+} QTableView {
+    font-size: 10pt;
 }
 """
 
