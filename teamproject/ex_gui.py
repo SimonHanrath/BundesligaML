@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import urllib.request
+from teamproject import crawler, data_analytics, models
 from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
 from PyQt5.QtSvg import QSvgWidget
@@ -21,13 +22,12 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QStyleFactory
 )
-from teamproject import crawler, data_analytics, models
 
 
 class FuBaKI(QWidget):
     def __init__(self, parent=None):
         super(FuBaKI, self).__init__()
-        self.setWindowTitle("FuBaKI")
+        self.setWindowTitle('FuBaKI')
         self.initUI()
         # self.retranslateUI()
         self.resize(1000, 700)
