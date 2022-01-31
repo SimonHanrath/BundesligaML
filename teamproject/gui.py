@@ -442,10 +442,19 @@ class FuBaKI(QWidget):
     def display_home_icon(self):
         """Display the icon of the home team selected for prediction.
         """
-        homeIcon = self.teamdata.loc[self.teamdata['ID'] == self.selectHomeTeam.currentData(), 'icon'].values[0]
-        homeIconPath = f'{crawler.g_cache_path}/homeIcon.png'
-        urllib.request.urlretrieve(homeIcon, homeIconPath)
-        pixmap = QtGui.QPixmap(homeIconPath)
+        iconURL = self.teamdata.loc[self.teamdata['ID'] == self.selectHomeTeam.currentData(), 'icon'].values[0]
+        fileExt = iconURL.split('.')[-1]
+        iconPath = f'{crawler.g_cache_path}/homeIcon.{fileExt}'
+
+        response = requests.get(iconURL, stream=True)
+        if response.ok:
+            chunkSize = 32 * 1024
+            with open(iconPath, 'wb') as imageFile:
+                imageFile.writelines(response.iter_content(chunkSize))
+            pixmap = QtGui.QPixmap(iconPath)
+        else:
+            pixmap = QtGui.QPixmap(f'{g_img_path}/none.png')
+
         self.homeIcon.setPixmap(pixmap.scaled(100, 100))
 
 
