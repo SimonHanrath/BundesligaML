@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import requests
 import urllib.request
 from teamproject import crawler, data_analytics, models
 from PIL import Image
@@ -24,6 +25,9 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QStyleFactory
 )
+
+
+g_img_path = f'{os.path.dirname(os.path.abspath(__file__))}/img'
 
 
 class FuBaKI(QWidget):
@@ -191,7 +195,7 @@ class FuBaKI(QWidget):
         self.setLayout(ui)
 
     def init_content(self):
-        crawler.refresh_ui_cache()
+        #crawler.refresh_ui_cache()
         self.avail = crawler.load_cache_index()
         self.next = crawler.load_matchdata('next')
 
@@ -310,7 +314,7 @@ class FuBaKI(QWidget):
             elif algo == 'dixoncoles':
                 self.selectFromSeason.setCurrentIndex(1)
 
-    def clamp(self, num: int, min: int):
+    def clamp(self, num: int, min: int) -> int:
         """Clamps a number to a given minimum.
 
         Args:
@@ -419,11 +423,21 @@ class FuBaKI(QWidget):
     def display_guest_icon(self):
         """Display the icon of the guest team selected for prediction.
         """
-        guestIcon = self.teamdata.loc[self.teamdata['ID'] == self.selectGuestTeam.currentData(), 'icon'].values[0]
-        guestIconPath = f'{crawler.g_cache_path}/guestIcon.png'
-        urllib.request.urlretrieve(guestIcon, guestIconPath)
-        pixmap = QtGui.QPixmap(guestIconPath)
+        iconURL = self.teamdata.loc[self.teamdata['ID'] == self.selectGuestTeam.currentData(), 'icon'].values[0]
+        fileExt = iconURL.split('.')[-1]
+        iconPath = f'{crawler.g_cache_path}/guestIcon.{fileExt}'
+
+        response = requests.get(iconURL, stream=True)
+        if response.ok:
+            chunkSize = 32 * 1024
+            with open(iconPath, 'wb') as imageFile:
+                imageFile.writelines(response.iter_content(chunkSize))
+            pixmap = QtGui.QPixmap(iconPath)
+        else:
+            pixmap = QtGui.QPixmap(f'{g_img_path}/none.png')
+
         self.guestIcon.setPixmap(pixmap.scaled(100, 100))
+
 
     def display_home_icon(self):
         """Display the icon of the home team selected for prediction.
@@ -434,10 +448,6 @@ class FuBaKI(QWidget):
         pixmap = QtGui.QPixmap(homeIconPath)
         self.homeIcon.setPixmap(pixmap.scaled(100, 100))
 
-    def display_icon(self):
-        """TO-DO
-        """
-        pass
 
     def statisticscall(self):
         """Open window with detailed statistics.
@@ -455,8 +465,7 @@ class FuBaKI(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    path = {os.path.dirname(os.path.abspath(__file__))}
-    app.setWindowIcon(QtGui.QIcon(f'{path}/img/icon.png'))
+    app.setWindowIcon(QtGui.QIcon(f'{g_img_path}/icon.png'))
     window = FuBaKI()
     window.show()
     sys.exit(app.exec_())
