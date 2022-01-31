@@ -255,7 +255,7 @@ def main(data, homeClub, guestClub):
 
 
 
-    def createHistogram(axis, title, xAxis, yAxis, labels, values):
+    def createHistogram(axis, title, xAxis, yAxis, labels, values,homeClubName,guestClubName ):
         """creates an histogram
                     Args:
                         axis (str):   position of the subplot
@@ -265,18 +265,21 @@ def main(data, homeClub, guestClub):
                         labels(array[str]): label name of each bar
                         values (array[int]):
                         maxY  (int):  max Value for y axis
+                        homeClubName (str): name of the home club
+                        guestClubName (str): name of the guest club
                     Returns:
                         no returns
                     Example:
                         createHistogram(axes[0][0], "overall goals", "number of goals", "goal count", ["0","1","2","3","4"], ["0", "3", "8", "10", "5"])
                 """
-        axis.hist(values, color="black", rwidth=0.7, edgecolor="black", bins=range(0, 10))
+        axis.hist([values[0],values[1]], color=["darkred","darkblue"], rwidth=0.7, edgecolor="black", bins=range(0, 10))
         axis.set_xlabel(xAxis)
         axis.set_ylabel(yAxis)
+        axis.legend(labels=[homeClubName + " as home club", guestClubName + " as guest club"])
         axis.set_title(title, fontdict={"fontsize": 15})
 
 
-    def createBar(axis, title, xAxis, yAxis, labels, values, maxY):
+    def createBar(axis, title, xAxis, yAxis, labels, values, maxY,homeClubName,guestClubName):
         """creates a bar graph
                     Args:
                         axis (str):
@@ -286,15 +289,19 @@ def main(data, homeClub, guestClub):
                         labels(array[str]): label name of each bar
                         values(array[int]): values for the bar graph
                         maxY  (int):  max Value for y axis
+                        homeClubName (str): name of the home club
+                        guestClubName (str): name of the guest club
                     Returns:
                         no returns
                     Example:
                         createBar(axes[0][0], "Matches as homeClub"," "," ", ["wins", "loses", "draws"], [0, 3, 8])
                 """
-        axis.bar(x=n.arange(0, 3), height=values, color="darkred", edgecolor="black", tick_label=labels, capsize=3)
+        axis.bar(x=n.arange(3) + 0.00, height=values[0],width = 0.25, color="darkred", edgecolor="black", tick_label=labels, capsize=3)
+        axis.bar(x=n.arange(3) + 0.25, height=values[1],width = 0.25, color="darkblue", edgecolor="black", tick_label=labels, capsize=3)
         axis.set_xlabel(xAxis)
         axis.set_ylabel(yAxis)
         axis.set_ylim([0,maxY+10])
+        axis.legend(labels=[homeClubName + " as home club", guestClubName + " as guest club"])
         axis.set_title(title, fontdict={"fontsize": 15})
 
 
@@ -309,15 +316,15 @@ def main(data, homeClub, guestClub):
                     Example:
                         statistics("1. FC Nürnberg", "Hannover 96"))
                 """
-        fig, axes = pp.subplots(nrows=3,ncols=2, figsize=(20, 15))
-        fig.suptitle("Statistics", fontsize=24)
+        fig, axes = pp.subplots(nrows=3,ncols=1, figsize=(12, 12))
+        fig.suptitle("Statistics", fontsize=20)
 
-        createBar(axes[0][0], "overall Matches by " + homeClub + " as home club", "", " ", ["wins", "loses", "draws"], matchResultsHome(homeClub), max(matchResultsHome(homeClub)))
-        createBar(axes[0][1], "overall Matches by " + guestClub + " as guest club","", " ", ["wins", "loses", "draws"], matchResultsGuest(guestClub), max(matchResultsGuest(guestClub)))
-        createBar(axes[1][0], "Results in the past- " + homeClub +  " as home Club", "", " ",[homeClub, guestClub, "draws"], specificMatches(homeClub, guestClub), max(specificMatches(homeClub, guestClub)))
-        createBar(axes[1][1], "Results in the past- " + guestClub +  " as homeClub", "", " ", [guestClub,homeClub, "draws"], specificMatches(guestClub, homeClub), max(specificMatches(homeClub, guestClub)))
-        createHistogram(axes[2][0], "overall goals by " + homeClub + " as home club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountHome(homeClub))
-        createHistogram(axes[2][1], "overall goals by " + guestClub + " as guest club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountGuest(guestClub))
+        createBar(axes[0], "overall Matches", "", " ", ["wins", "loses", "draws"], [matchResultsHome(homeClub),matchResultsGuest(guestClub)], max(matchResultsHome(homeClub)), homeClub, guestClub)
+        #createBar(axes[0][1], "overall Matches by " + guestClub + " as guest club","", " ", ["wins", "loses", "draws"], matchResultsGuest(guestClub), max(matchResultsGuest(guestClub)))
+        createBar(axes[1], "Results in the past with this match up", "", " ",[homeClub, guestClub, "draws"], [specificMatches(homeClub, guestClub),specificMatches(guestClub, homeClub)], max(specificMatches(homeClub, guestClub)), homeClub, guestClub)
+        #createBar(axes[1][1], "Results in the past- " + guestClub +  " as homeClub", "", " ", [guestClub,homeClub, "draws"], specificMatches(guestClub, homeClub), max(specificMatches(homeClub, guestClub)))
+        createHistogram(axes[2], "overall goals", "number of goals", "goal count", ["wins", "loses", "draws"], [goalCountHome(homeClub),goalCountGuest(guestClub)], homeClub, guestClub)
+        #createHistogram(axes[2][1], "overall goals by " + guestClub + " as guest club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountGuest(guestClub))
         pp.show()
 
     statistics(homeClub,guestClub)
