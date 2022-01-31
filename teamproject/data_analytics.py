@@ -1,11 +1,12 @@
-#from crawler import get_data
+# from crawler import get_data
 import matplotlib.pyplot as pp
 import numpy as n
+
 
 def main(data, homeClub, guestClub):
     # filePath = fetch_data(2009,180, 2021,140,'C:/Users/Philipp Wagner/Desktop/Python_Projekte/BundesligaML/teamproject/crawled_data/matches-2009-180-2021-140.json')
     fetchedMatches = data
-    #fetchedMatches = get_data(2009, 180, 2021, 140)
+    # fetchedMatches = get_data(2009, 180, 2021, 140)
 
     """Index(['season',
            'division',
@@ -17,7 +18,7 @@ def main(data, homeClub, guestClub):
            'guestTeamName',
            'homeScore',
            'guestScore',
-           'goalMinsHome',          
+           'goalMinsHome',
            'goalMinsGuest'],
            dtype='object')
     """
@@ -43,7 +44,6 @@ def main(data, homeClub, guestClub):
         if duplicate is False:
             allTeams.append(fetchedMatches["homeTeamName"][i])
 
-
     # wins by home team
     homeWins = 0
     for i in fetchedMatches.index:
@@ -64,6 +64,7 @@ def main(data, homeClub, guestClub):
         if fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
             drawMatches = drawMatches + 1
     print(drawMatches)
+
 
     def matchResultsHome(homeClub):
         """matches of each team as homeClub
@@ -88,7 +89,6 @@ def main(data, homeClub, guestClub):
         return result
 
 
-
     def matchResultsGuest(guestClub):
         """matches of each team as guestClub
             Args:
@@ -110,7 +110,6 @@ def main(data, homeClub, guestClub):
                 draws = draws + 1
         result = [wins, loses, draws]
         return result
-
 
 
     def specificMatchesHome(homeClub):
@@ -197,8 +196,6 @@ def main(data, homeClub, guestClub):
         return result
 
 
-
-
     def specificMatches(homeClub, guestClub):
         """shows results of the matches in the past of the homeClub against the guestClub
                 Args:
@@ -216,7 +213,7 @@ def main(data, homeClub, guestClub):
             if fetchedMatches["guestTeamName"][i] == guestClub and fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["homeScore"][i] < fetchedMatches["guestScore"][i]:
                 guestClubWins = guestClubWins + 1
             if fetchedMatches["guestTeamName"][i] == guestClub and fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["homeScore"][i] == fetchedMatches["guestScore"][i]:
-                  draws = draws + 1
+                draws = draws + 1
             if fetchedMatches["guestTeamName"][i] == guestClub and fetchedMatches["homeTeamName"][i] == homeClub and fetchedMatches["homeScore"][i] > fetchedMatches["guestScore"][i]:
                 homeClubWins = homeClubWins + 1
         result = [homeClubWins, guestClubWins, draws]
@@ -254,8 +251,7 @@ def main(data, homeClub, guestClub):
         return goalCount
 
 
-
-    def createHistogram(axis, title, xAxis, yAxis, labels, values,homeClubName,guestClubName ):
+    def createHistogram(axis, title, xAxis, yAxis, labels, values, homeClubName, guestClubName):
         """creates an histogram
                     Args:
                         axis (str):   position of the subplot
@@ -272,14 +268,14 @@ def main(data, homeClub, guestClub):
                     Example:
                         createHistogram(axes[0][0], "overall goals", "number of goals", "goal count", ["0","1","2","3","4"], ["0", "3", "8", "10", "5"])
                 """
-        axis.hist([values[0],values[1]], color=["darkred","darkblue"], rwidth=0.7, edgecolor="black", bins=range(0, 10))
+        axis.hist([values[0], values[1]], color=["darkred", "darkblue"], rwidth=0.7, edgecolor="black", bins=range(0, 10))
         axis.set_xlabel(xAxis)
         axis.set_ylabel(yAxis)
         axis.legend(labels=[homeClubName + " as home club", guestClubName + " as guest club"])
         axis.set_title(title, fontdict={"fontsize": 15})
 
 
-    def createBar(axis, title, xAxis, yAxis, labels, values, maxY,homeClubName,guestClubName):
+    def createBar(axis, title, xAxis, yAxis, labels, values, maxY, homeClubName, guestClubName):
         """creates a bar graph
                     Args:
                         axis (str):
@@ -296,14 +292,13 @@ def main(data, homeClub, guestClub):
                     Example:
                         createBar(axes[0][0], "Matches as homeClub"," "," ", ["wins", "loses", "draws"], [0, 3, 8])
                 """
-        axis.bar(x=n.arange(3) + 0.00, height=values[0],width = 0.25, color="darkred", edgecolor="black", tick_label=labels, capsize=3)
-        axis.bar(x=n.arange(3) + 0.25, height=values[1],width = 0.25, color="darkblue", edgecolor="black", tick_label=labels, capsize=3)
+        axis.bar(x=n.arange(3) + 0.00, height=values[0], width=0.25, color="darkred", edgecolor="black", tick_label=labels, capsize=3)
+        axis.bar(x=n.arange(3) + 0.25, height=values[1], width=0.25, color="darkblue", edgecolor="black", tick_label=labels, capsize=3)
         axis.set_xlabel(xAxis)
         axis.set_ylabel(yAxis)
-        axis.set_ylim([0,maxY+10])
+        axis.set_ylim([0, maxY + 10])
         axis.legend(labels=[homeClubName + " as home club", guestClubName + " as guest club"])
         axis.set_title(title, fontdict={"fontsize": 15})
-
 
 
     def statistics(homeClub, guestClub):
@@ -316,16 +311,15 @@ def main(data, homeClub, guestClub):
                     Example:
                         statistics("1. FC Nürnberg", "Hannover 96"))
                 """
-        fig, axes = pp.subplots(nrows=3,ncols=1, figsize=(12, 12))
+        fig, axes = pp.subplots(nrows=3, ncols=1, figsize=(12, 12))
         fig.suptitle("Statistics", fontsize=20)
 
-        createBar(axes[0], "overall Matches", "", " ", ["wins", "loses", "draws"], [matchResultsHome(homeClub),matchResultsGuest(guestClub)], max(matchResultsHome(homeClub)), homeClub, guestClub)
-        #createBar(axes[0][1], "overall Matches by " + guestClub + " as guest club","", " ", ["wins", "loses", "draws"], matchResultsGuest(guestClub), max(matchResultsGuest(guestClub)))
-        createBar(axes[1], "Results in the past with this match up", "", " ",[homeClub, guestClub, "draws"], [specificMatches(homeClub, guestClub),specificMatches(guestClub, homeClub)], max(specificMatches(homeClub, guestClub)), homeClub, guestClub)
-        #createBar(axes[1][1], "Results in the past- " + guestClub +  " as homeClub", "", " ", [guestClub,homeClub, "draws"], specificMatches(guestClub, homeClub), max(specificMatches(homeClub, guestClub)))
-        createHistogram(axes[2], "overall goals", "number of goals", "goal count", ["wins", "loses", "draws"], [goalCountHome(homeClub),goalCountGuest(guestClub)], homeClub, guestClub)
-        #createHistogram(axes[2][1], "overall goals by " + guestClub + " as guest club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountGuest(guestClub))
+        createBar(axes[0], "overall Matches", "", " ", ["wins", "loses", "draws"], [matchResultsHome(homeClub), matchResultsGuest(guestClub)], max(matchResultsHome(homeClub)), homeClub, guestClub)
+        # createBar(axes[0][1], "overall Matches by " + guestClub + " as guest club","", " ", ["wins", "loses", "draws"], matchResultsGuest(guestClub), max(matchResultsGuest(guestClub)))
+        createBar(axes[1], "Results in the past with this match up", "", " ", [homeClub, guestClub, "draws"], [specificMatches(homeClub, guestClub), specificMatches(guestClub, homeClub)], max(specificMatches(homeClub, guestClub)), homeClub, guestClub)
+        # createBar(axes[1][1], "Results in the past- " + guestClub +  " as homeClub", "", " ", [guestClub,homeClub, "draws"], specificMatches(guestClub, homeClub), max(specificMatches(homeClub, guestClub)))
+        createHistogram(axes[2], "overall goals", "number of goals", "goal count", ["wins", "loses", "draws"], [goalCountHome(homeClub), goalCountGuest(guestClub)], homeClub, guestClub)
+        # createHistogram(axes[2][1], "overall goals by " + guestClub + " as guest club", "number of goals", "goal count", ["wins", "loses", "draws"], goalCountGuest(guestClub))
         pp.show()
 
-    statistics(homeClub,guestClub)
-
+    statistics(homeClub, guestClub)
