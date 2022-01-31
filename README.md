@@ -13,7 +13,7 @@ PoissonRegression: Previous 2 Seasons
 
 Dixon Coles: Largest Possible timeframe
 
-
+<img src="fuba.png">
 
 
 Dependencies
