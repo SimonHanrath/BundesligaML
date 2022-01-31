@@ -53,6 +53,7 @@ class FuBaKI(QWidget):
         self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
         self.selectAlgo.addItem('Poisson Regression', 'poisson')
         self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
+        self.selectAlgo.setCurrentIndex(1)
         self.selectAlgo.currentIndexChanged.connect(self.change_algo)
 
         self.intvLabel = QLabel('Specify the interval of training data:')
@@ -195,7 +196,7 @@ class FuBaKI(QWidget):
         self.setLayout(ui)
 
     def init_content(self):
-        #crawler.refresh_ui_cache()
+        crawler.refresh_ui_cache()
         self.avail = crawler.load_cache_index()
         self.next = crawler.load_matchdata('next')
 
@@ -426,7 +427,6 @@ class FuBaKI(QWidget):
         iconURL = self.teamdata.loc[self.teamdata['ID'] == self.selectGuestTeam.currentData(), 'icon'].values[0]
         fileExt = iconURL.split('.')[-1]
         iconPath = f'{crawler.g_cache_path}/guestIcon.{fileExt}'
-
         response = requests.get(iconURL, stream=True)
         if response.ok:
             chunkSize = 32 * 1024
@@ -435,9 +435,7 @@ class FuBaKI(QWidget):
             pixmap = QtGui.QPixmap(iconPath)
         else:
             pixmap = QtGui.QPixmap(f'{g_img_path}/none.png')
-
         self.guestIcon.setPixmap(pixmap.scaled(100, 100))
-
 
     def display_home_icon(self):
         """Display the icon of the home team selected for prediction.
@@ -475,6 +473,7 @@ class FuBaKI(QWidget):
 def main():
     app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(f'{g_img_path}/icon.png'))
+    # app.setApplicationName('FuBaKI')
     window = FuBaKI()
     window.show()
     sys.exit(app.exec_())
