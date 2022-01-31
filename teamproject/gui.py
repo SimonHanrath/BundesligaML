@@ -1,415 +1,466 @@
+# -*- coding: utf-8 -*-
+import os
 import sys
 import urllib.request
-
-import pandas as pd
+from teamproject import crawler, data_analytics, models
 from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
 from PyQt5.QtSvg import QSvgWidget
-# -*- coding: utf-8 -*-
-#from svglib.svglib import svg2rlg
-#from reportlab.graphics import renderPM
+# from svglib.svglib import svg2rlg
+# from reportlab.graphics import renderPM
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QWidget,
+    QShortcut,
+    QMessageBox,
+    QHBoxLayout,
+    QVBoxLayout,
+    QPushButton,
+    QLabel,
+    QComboBox,
+    QCheckBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QStyleFactory
+)
 
-from PyQt5.QtWidgets import QWidget, QMessageBox
-from teamproject import crawler
-from teamproject import data_analytics
-from teamproject.models import BaselineAlgo
-from teamproject.models import DixonColes
-from teamproject.models import PoissonRegression
 
+class FuBaKI(QWidget):
+    def __init__(self, parent=None):
+        super(FuBaKI, self).__init__(parent)
+        self.setWindowTitle('FuBaKI')
+        self.init_elements()
+        self.init_layout()
+        self.init_content()
+        self.init_style()
+        self.resize(1000, 700)
+
+    def init_elements(self):
+        self.shortcutQuit = QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.shortcutQuit.activated.connect(self.close)
+        self.shortcutClose = QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
+        self.shortcutClose.activated.connect(self.close)
+
+        self.selectAlgoLabel = QLabel('Select the desired algorithm:')
+        self.selectAlgo = QComboBox()
+        self.selectAlgo.addItem('Prediction Algorithm')
+        self.reset_items(self.selectAlgo)
+        self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
+        self.selectAlgo.addItem('Poisson Regression', 'poisson')
+        self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
+        self.selectAlgo.currentIndexChanged.connect(self.change_algo)
+
+        self.intvLabel = QLabel('Specify the interval of training data:')
+        self.selectFromLabel = QLabel('From')
+        self.selectFromSeason = QComboBox()
+        self.selectFromSeason.addItem('Season')
+        self.reset_items(self.selectFromSeason)
+        self.selectFromDay = QComboBox()
+        self.selectFromSeason.currentIndexChanged.connect(self.fill_from_day)
+        self.selectFromDay.setEnabled(False)
+        self.selectFromDay.addItem('Match Day')
+        self.reset_items(self.selectFromDay)
+        self.selectToLabel = QLabel('To')
+        self.selectToSeason = QComboBox()
+        self.selectToSeason.addItem('Season')
+        self.reset_items(self.selectToSeason)
+        self.selectToDay = QComboBox()
+        self.selectToSeason.currentIndexChanged.connect(self.fill_to_day)
+        self.selectToDay.setEnabled(False)
+        self.selectToDay.addItem('Match Day')
+        self.reset_items(self.selectToDay)
+        self.intvForceUpdate = QCheckBox('force re-caching')
+        self.crawlerButton = QPushButton('Fetch Data')
+        self.crawlerButton.clicked.connect(self.crawlercall)
+
+        self.trainingButton = QPushButton('Start Training')
+        self.trainingButton.setEnabled(False)
+        self.trainingButton.clicked.connect(self.trainingcall)
+
+        self.selectTeamsLabel = QLabel('Pick teams for prediction:')
+        self.selectHomeTeam = QComboBox()
+        self.selectHomeTeam.setEnabled(False)
+        self.selectHomeTeam.addItem('Home Team')
+        self.reset_items(self.selectHomeTeam)
+        self.selectGuestTeam = QComboBox()
+        self.selectGuestTeam.setEnabled(False)
+        self.selectGuestTeam.addItem('Guest Team')
+        self.reset_items(self.selectGuestTeam)
+        self.predictButton = QPushButton('Show Results')
+        self.predictButton.clicked.connect(self.resultscall)
+        self.predictButton.setEnabled(False)
+
+        self.colon = QLabel()
+        font = QtGui.QFont('Times New Roman', 35, weight=QtGui.QFont.Bold)
+        self.colon.setFont(font)
+        self.homeIcon = QLabel()
+        self.guestIcon = QLabel()
+        self.resultLabel = QLabel()
+        self.statisticButton = QPushButton('More Statistics…')
+        self.statisticButton.clicked.connect(self.statisticscall)
+        self.statisticButton.setEnabled(False)
+
+        self.nextMatchesLabel = QLabel('Upcoming matches:')
+        self.nextMatches = QTableWidget()
+        self.nextMatches.setMinimumWidth(250)
+        self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.nextMatches.doubleClicked.connect(self.select_teams)
+        self.nextMatches.setColumnCount(3)
+        self.nextMatches.verticalHeader().setVisible(False)
+        columnLabels = ['Date', 'Home Team', 'Guest Team']
+        self.nextMatches.setHorizontalHeaderLabels(columnLabels)
+        self.nextMatches.setColumnWidth(0, 50)
+        self.nextMatches.setColumnWidth(1, 150)
+        self.nextMatches.setColumnWidth(2, 150)
+        header = self.nextMatches.horizontalHeader()
+        header.setHighlightSections(False)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+
+    def init_layout(self):
+        algoLayout = QHBoxLayout()
+        algoLayout.addWidget(self.selectAlgo, 1)
+        algoLayout.addStretch(2)
+        intvLayout = QHBoxLayout()
+        intvLayout.addWidget(self.selectFromLabel)
+        intvLayout.addWidget(self.selectFromSeason, 1)
+        intvLayout.addWidget(self.selectFromDay, 1)
+        intvLayout.addSpacing(25)
+        intvLayout.addWidget(self.selectToLabel)
+        intvLayout.addWidget(self.selectToSeason, 1)
+        intvLayout.addWidget(self.selectToDay, 1)
+        recacheLayout = QHBoxLayout()
+        recacheLayout.addWidget(self.intvForceUpdate)
+        recacheLayout.addSpacing(25)
+        recacheLayout.addWidget(self.crawlerButton, 1)
+        recacheLayout.addStretch(2)
+        trainingLayout = QHBoxLayout()
+        trainingLayout.addWidget(self.trainingButton, 1)
+        trainingLayout.addStretch(2)
+        iconLayout = QHBoxLayout()
+        iconLayout.addStretch(1)
+        iconLayout.addWidget(self.homeIcon)
+        iconLayout.addSpacing(10)
+        iconLayout.addWidget(self.colon)
+        iconLayout.addSpacing(10)
+        iconLayout.addWidget(self.guestIcon)
+        iconLayout.addStretch(3)
+        predictLayout = QHBoxLayout()
+        predictLayout.addWidget(self.selectHomeTeam, 2)
+        predictLayout.addWidget(self.selectGuestTeam, 2)
+        predictLayout.addSpacing(25)
+        predictLayout.addWidget(self.predictButton, 1)
+        resultLayout = QHBoxLayout()
+        resultLayout.addStretch(1)
+        resultLayout.addWidget(self.resultLabel)
+        resultLayout.addStretch(4)
+        statisticLayout = QHBoxLayout()
+        statisticLayout.addWidget(self.statisticButton, 1)
+        statisticLayout.addStretch(2)
+
+        leftUILayout = QVBoxLayout()
+        leftUILayout.addWidget(self.selectAlgoLabel)
+        leftUILayout.addLayout(algoLayout)
+        leftUILayout.addStretch(3)
+        leftUILayout.addWidget(self.intvLabel)
+        leftUILayout.addLayout(intvLayout)
+        leftUILayout.addSpacing(5)
+        leftUILayout.addLayout(recacheLayout)
+        leftUILayout.addStretch(1)
+        leftUILayout.addLayout(trainingLayout)
+        leftUILayout.addStretch(3)
+        leftUILayout.addWidget(self.selectTeamsLabel)
+        leftUILayout.addLayout(predictLayout)
+        leftUILayout.addStretch(1)
+        leftUILayout.addLayout(iconLayout)
+        leftUILayout.addLayout(resultLayout)
+        leftUILayout.addStretch(1)
+        leftUILayout.addLayout(statisticLayout)
+        rightLayout = QVBoxLayout()
+        rightLayout.addWidget(self.nextMatchesLabel)
+        rightLayout.addWidget(self.nextMatches)
+
+        ui = QHBoxLayout()
+        ui.addLayout(leftUILayout, 2)
+        ui.addSpacing(50)
+        ui.addLayout(rightLayout, 1)
+        self.setLayout(ui)
+
+    def init_content(self):
+        crawler.refresh_ui_cache()
+        self.avail = crawler.load_cache_index()
+        self.next = crawler.load_matchdata('next')
+
+        for season in self.avail['season'].values:
+            self.selectFromSeason.addItem(str(season), season)
+            self.selectToSeason.addItem(str(season), season)
+
+        nextMatchdata = self.next.to_dict('records')
+        self.nextMatches.setRowCount(len(nextMatchdata))
+        for i in range(0, len(nextMatchdata)):
+            date = nextMatchdata[i]['datetime'].strftime('%d %b, %H:%M ')
+            homeTeamName = nextMatchdata[i]['homeTeamName']
+            guestTeamName = nextMatchdata[i]['guestTeamName']
+            self.nextMatches.setItem(i, 0, QTableWidgetItem(date))
+            self.nextMatches.setItem(i, 1, QTableWidgetItem(homeTeamName))
+            self.nextMatches.setItem(i, 2, QTableWidgetItem(guestTeamName))
+
+    def init_style(self):
+        styleSheet = """
+        QLabel, QHeaderView, QTableView {
+            color: rgb(55,65,74);
+        } QPushButton {
+            background: rgb(112,128,144);
+            border: none;
+            border-radius: 3px;
+            color: rgb(255,255,255);
+            font-weight: bold;
+            padding: 7px 10px;
+        } QPushButton:hover {
+            background: rgb(119,136,153);
+        } QPushButton:pressed {
+            background: rgb(55,65,74);
+            border: 1px solid rgb(255,255,255);
+        } QPushButton:disabled {
+            background: rgba(112,128,144,0.5);
+        } QTableView {
+            font-size: 10pt;
+        }
+        """
+        QApplication.setStyle(QStyleFactory.create('Fusion'))
+        self.setStyleSheet(styleSheet)
+
+    def reset_items(self, box):
+        """Clears all but the first item from a given Combobox.
+
+        Args:
+            box (QComboBox): Combobox that will be cleared.
+        """
+        label = box.itemText(0)
+        box.clear()
+        box.addItem(label, None)
+        box.model().item(0).setEnabled(False)
+
+    def fill_from_day(self, index):
+        """Show available match days corresponding to the selected season, i.e.
+        lower limit of the time interval.
+
+        Args:
+            index (int): Combobox index of the selected season.
+        """
+        self.reset_items(self.selectFromDay)
+        season = self.selectFromSeason.itemData(index)
+        matchdays = self.avail.loc[self.avail['season'] == season, 'availMatchdays'].values[0]
+        for day in range(1, matchdays + 1):
+            self.selectFromDay.addItem(str(day), day)
+        self.selectFromDay.setCurrentIndex(1)
+        self.selectFromDay.setEnabled(True)
+
+    def fill_to_day(self, index):
+        """Show available match days corresponding to the selected season, i.e.
+        upper limit of the time interval.
+
+        Args:
+            index (int): Combobox index of the selected season.
+        """
+        self.reset_items(self.selectToDay)
+        season = self.selectToSeason.itemData(index)
+        matchdays = self.avail.loc[self.avail['season'] == season, 'availMatchdays'].values[0]
+        for day in range(1, matchdays + 1):
+            self.selectToDay.addItem(str(day), day)
+        self.selectToDay.setCurrentIndex(matchdays)
+        self.selectToDay.setEnabled(True)
+
+    def change_algo(self, index):
+        """Changing the prediction algorithm disables GUI elements and suggests
+        a training data interval.
+
+        Args:
+            index (int): Combobox index of the selected prediction algorithm.
+        """
+        self.selectHomeTeam.setEnabled(False)
+        self.selectGuestTeam.setEnabled(False)
+        self.predictButton.setEnabled(False)
+        self.statisticButton.setEnabled(False)
+
+        algo = self.selectAlgo.itemData(index)
+        toSeasonLast = self.selectToSeason.count() - 1
+        if algo is not None and toSeasonLast > 0:
+            self.selectToSeason.setCurrentIndex(toSeasonLast)
+            if algo == 'baseline':
+                days = 7
+                fromSeason = toSeasonLast
+                while days > 0 and fromSeason > 1:
+                    self.selectFromSeason.setCurrentIndex(fromSeason)
+                    toDayLast = self.selectFromDay.count() - 1
+                    if toDayLast - days > 0:
+                        self.selectFromDay.setCurrentIndex(toDayLast - days)
+                    else:
+                        fromSeason = fromSeason - 1
+                    days = days - toDayLast
+            elif algo == 'poisson':
+                fromSeason = self.clamp(toSeasonLast - 2, 1)
+                self.selectFromSeason.setCurrentIndex(fromSeason)
+                toDayLast = self.selectToDay.count() - 1
+                self.selectFromDay.setCurrentIndex(self.clamp(toDayLast, 1))
+            elif algo == 'dixoncoles':
+                self.selectFromSeason.setCurrentIndex(1)
+
+    def clamp(self, num: int, min: int):
+        """Clamps a number to a given minimum.
+
+        Args:
+            num (int): An arbitrary number.
+            min (int): The desired minimum.
+
+        Returns:
+            Resulting number, clamped to the given minimum
+        """
+        if num < 0:
+            return 0
+        else:
+            return num
+
+    def select_teams(self):
+        """After double clicking on a row in next matches table, automatically
+        select corresponding teams for prediction.
+        """
+        row = self.nextMatches.currentRow()
+        homeName = self.next.iloc[row]['homeTeamName']
+        guestName = self.next.iloc[row]['guestTeamName']
+        homeIndex = self.selectHomeTeam.findText(homeName, QtCore.Qt.MatchFixedString)
+        guestIndex = self.selectGuestTeam.findText(guestName, QtCore.Qt.MatchFixedString)
+        if homeIndex >= 0 and self.selectHomeTeam.isEnabled():
+            self.selectHomeTeam.setCurrentIndex(homeIndex)
+        if guestIndex >= 0 and self.selectGuestTeam.isEnabled():
+            self.selectGuestTeam.setCurrentIndex(guestIndex)
+
+    def crawlercall(self):
+        """Fetches data within the chosen time interval. After that, fills
+        home team and guest team comboboxes with teams names.
+        """
+        self.crawlerButton.setEnabled(False)
+        self.selectHomeTeam.setEnabled(False)
+        self.selectGuestTeam.setEnabled(False)
+        self.trainingButton.setEnabled(False)
+        self.predictButton.setEnabled(False)
+        self.statisticButton.setEnabled(False)
+        self.reset_items(self.selectHomeTeam)
+        self.reset_items(self.selectGuestTeam)
+        fromSeason = self.selectFromSeason.currentData()
+        fromDay = self.selectFromDay.currentData()
+        toSeason = self.selectToSeason.currentData()
+        toDay = self.selectToDay.currentData()
+        forceUpdate = self.intvForceUpdate.isChecked()
+
+        if None in (fromSeason, fromDay, toSeason, toDay):
+            message = 'Selected interval incomplete.'
+            QMessageBox.warning(self, 'Invalid interval', message)
+        elif (fromSeason == toSeason and fromDay > toDay) or (fromSeason > toSeason):
+            message = 'Please select a valid time interval.'
+            QMessageBox.warning(self, 'Invalid interval', message)
+        else:
+            self.matchdata = crawler.get_data(fromSeason, fromDay, toSeason, toDay, forceUpdate)
+            self.teamdata = crawler.get_teams(self.matchdata)
+            teamList = self.teamdata.to_dict('records')
+            for team in teamList:
+                self.selectHomeTeam.addItem(team['name'], team['ID'])
+                self.selectGuestTeam.addItem(team['name'], team['ID'])
+            self.trainingButton.setEnabled(True)
+
+        self.crawlerButton.setEnabled(True)
+
+    def trainingcall(self):
+        """Train chosen algorithm on the basis of selected time interval.
+        """
+        algo = self.selectAlgo.currentData()
+        if algo is None:
+            message = 'Please select an algorithm.'
+            QMessageBox.warning(self, 'No algorithm selected', message)
+            return  # exit
+        elif algo == 'baseline':
+            self.model = models.BaselineAlgo(self.matchdata)
+        elif algo == 'poisson':
+            self.model = models.PoissonRegression(self.matchdata)
+        elif algo == 'dixoncoles':
+            self.model = models.DixonColes(self.matchdata)
+
+        self.selectHomeTeam.setEnabled(True)
+        self.selectGuestTeam.setEnabled(True)
+        self.predictButton.setEnabled(True)
+        self.statisticButton.setEnabled(True)
+
+    def resultscall(self):
+        """Compute and display prediction results.
+        """
+        homeTeamID = self.selectHomeTeam.currentData()
+        guestTeamID = self.selectGuestTeam.currentData()
+        if None in (homeTeamID, guestTeamID):
+            QMessageBox.warning(self, 'Invalid Teams', 'Please select a home and guest team.')
+            return  # exit
+        elif homeTeamID == guestTeamID:
+            QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and guest teams.')
+            return  # exit
+
+        self.colon.setText(':')
+        self.display_home_icon()
+        self.display_guest_icon()
+        homeTeamName = str(self.selectHomeTeam.currentText())
+        guestTeamName = str(self.selectGuestTeam.currentText())
+        predictionList = self.model.predict(homeTeamName, guestTeamName)
+        self.resultLabel.setText(f'home: {str(round(predictionList[0]*100, 2))}%   '
+                                 + f'draw: {str(round(predictionList[1]*100, 2))}%   '
+                                 + f'guest: {str(round(predictionList[2]*100, 2))}%')
+
+    def display_guest_icon(self):
+        """Display the icon of the guest team selected for prediction.
+        """
+        guestIcon = self.teamdata.loc[self.teamdata['ID'] == self.selectGuestTeam.currentData(), 'icon'].values[0]
+        guestIconPath = f'{crawler.g_cache_path}/guestIcon.png'
+        urllib.request.urlretrieve(guestIcon, guestIconPath)
+        pixmap = QtGui.QPixmap(guestIconPath)
+        self.guestIcon.setPixmap(pixmap.scaled(100, 100))
+
+    def display_home_icon(self):
+        """Display the icon of the home team selected for prediction.
+        """
+        homeIcon = self.teamdata.loc[self.teamdata['ID'] == self.selectHomeTeam.currentData(), 'icon'].values[0]
+        homeIconPath = f'{crawler.g_cache_path}/homeIcon.png'
+        urllib.request.urlretrieve(homeIcon, homeIconPath)
+        pixmap = QtGui.QPixmap(homeIconPath)
+        self.homeIcon.setPixmap(pixmap.scaled(100, 100))
+
+    def display_icon(self):
+        """TO-DO
+        """
+        pass
+
+    def statisticscall(self):
+        """Open window with detailed statistics.
+        """
+        homeTeamID = self.selectHomeTeam.currentData()
+        guestTeamID = self.selectGuestTeam.currentData()
+        if None in (homeTeamID, guestTeamID):
+            QMessageBox.warning(self, 'Invalid Teams', 'Please select a home and guest team.')
+            return  # exit
+        elif homeTeamID == guestTeamID:
+            QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and guest teams.')
+            return  # exit
+        data_analytics.main(self.matchdata, self.selectHomeTeam.currentText(), self.selectGuestTeam.currentText())
 
 
 def main():
-    """
-    Creates and shows the main window.
-    """
-    class Ui_Dialog(QWidget):
-        def setupUi(self, Dialog):
-            """
-            Define all the Ui Elements in this method.
-
-            Args:
-                Dialog (PyQt5.QtWidgets.QDialog): Main window
-            """
-            Dialog.setMinimumSize(1355, 841)
-            Dialog.resize(1355, 841)
-            currentData = (0,0,0,0)
-
-
-            # create the ok and cancel buttons
-            self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-            self.buttonBox.setGeometry(QtCore.QRect(1000, 800, 341, 32))
-            self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-            self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
-            self.buttonBox.setObjectName('buttonBox')
-
-            # create a button to show the upcoming playday
-            self.playdaybutton = QtWidgets.QPushButton(Dialog)
-            self.playdaybutton.setGeometry(QtCore.QRect(550, 90, 230, 60))
-            self.playdaybutton.setObjectName('Show upcoming matches')
-            self.playdaybutton.clicked.connect(self.playdaycall)
-
-            # select the Algo label, to change the text have a look at the retranslateUI funktion
-            self.playdayLabel = QtWidgets.QLabel(Dialog)
-            self.playdayLabel.setGeometry(QtCore.QRect(950, 30, 323, 590))
-            self.playdayLabel.setObjectName('playdayLabel')
-
-
-            # select the Algo label, to change the text have a look at the retranslateUI funktion
-            self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
-            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
-            self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
-
-            # Algocombobox: Select the algorithm you want to use
-            self.algocomboBox = QtWidgets.QComboBox(Dialog)
-            self.algocomboBox.setGeometry(QtCore.QRect(40, 90, 301, 60))
-            self.algocomboBox.setObjectName('algocomboBox')
-            self.algocomboBox.addItem('Baseline Algorithm')
-            self.algocomboBox.addItem('Poisson Regression Algorithm')
-            self.algocomboBox.addItem('Dixon Coles Algorithm')
-
-            # A label that tells you to select the start time, to change the text have a look at the retranslateUI funktion
-            self.SelectStartTimeLabel = QtWidgets.QLabel(Dialog)
-            self.SelectStartTimeLabel.setGeometry(QtCore.QRect(30, 180, 371, 31))
-            self.SelectStartTimeLabel.setObjectName('SelectStartTimeLabel')
-
-            # A label that tells you to select the end time, to change the text have a look at the retranslateUI funktion
-            self.SelectEndTimeLabel = QtWidgets.QLabel(Dialog)
-            self.SelectEndTimeLabel.setGeometry(QtCore.QRect(450, 180, 371, 31))
-            self.SelectEndTimeLabel.setObjectName('SelectEndTimeLabel')
-
-            # The combobox to select the start season
-            self.StartYearcomboBox = QtWidgets.QComboBox(Dialog)
-            self.StartYearcomboBox.setGeometry(QtCore.QRect(40, 250, 104, 87))
-            self.StartYearcomboBox.setObjectName('StartYearcomboBox')
-            self.StartYearcomboBox.addItem('SelectStartSeasonLabel')
-            self.reset_items(self.StartYearcomboBox)
-
-            # The combobox to select the start match day
-            self.StartDaycomboBox = QtWidgets.QComboBox(Dialog)
-            self.StartDaycomboBox.setGeometry(QtCore.QRect(160, 250, 104, 87))
-            self.StartDaycomboBox.setObjectName('StartDaycomboBox')
-            self.StartDaycomboBox.setEnabled(False)
-            self.StartDaycomboBox.addItem('SelectStartMatchdayLabel')
-            self.reset_items(self.StartDaycomboBox)
-
-            # The combobox to select the end season
-            self.EndYearcomboBox = QtWidgets.QComboBox(Dialog)
-            self.EndYearcomboBox.setGeometry(QtCore.QRect(450, 250, 104, 87))
-            self.EndYearcomboBox.setObjectName('EndYearcomboBox')
-            self.EndYearcomboBox.addItem('SelectEndSeasonLabel')
-            self.reset_items(self.EndYearcomboBox)
-
-            # The combobox to select the end match day
-            self.EndDaycomboBox = QtWidgets.QComboBox(Dialog)
-            self.EndDaycomboBox.setGeometry(QtCore.QRect(570, 250, 104, 87))
-            self.EndDaycomboBox.setObjectName('EndDaycomboBox')
-            self.EndDaycomboBox.setEnabled(False)
-            self.EndDaycomboBox.addItem('SelectEndMatchdayLabel')
-            self.reset_items(self.EndDaycomboBox)
-
-            # force update flag
-            self.forceUpdateBox = QtWidgets.QCheckBox(Dialog)
-            self.forceUpdateBox.setGeometry(QtCore.QRect(40, 310, 30, 30))
-            self.forceUpdateLabel = QtWidgets.QLabel(Dialog)
-            self.forceUpdateLabel.setGeometry(QtCore.QRect(60, 310, 100, 31))
-            self.forceUpdateLabel.setObjectName('forceUpdateLabel')
-
-            # activate crawler Button
-            self.crawlerbutton = QtWidgets.QPushButton(Dialog)
-            self.crawlerbutton.setGeometry(QtCore.QRect(40, 350, 331, 101))
-            self.crawlerbutton.setObjectName('Activate Crawler')
-            self.crawlerbutton.clicked.connect(self.crawlercall)
-
-            # a label that tells you to select the team, to change the text have a look at the retranslateUI funktion
-            self.SelectTeamLabel = QtWidgets.QLabel(Dialog)
-            self.SelectTeamLabel.setGeometry(QtCore.QRect(30, 480, 371, 31))
-            self.SelectTeamLabel.setObjectName('SelectTeamLabel')
-
-            # the combobox to select the home team
-            self.homecomboBox = QtWidgets.QComboBox(Dialog)
-            self.homecomboBox.setGeometry(QtCore.QRect(40, 530, 301, 61))
-            self.homecomboBox.setObjectName('homecomboBox')
-            self.homecomboBox.setEnabled(False)
-            self.homecomboBox.addItem('SelectHomeTeamLabel')
-            self.reset_items(self.homecomboBox)
-
-            # the combobox to select the guest team
-            self.guestcomboBox = QtWidgets.QComboBox(Dialog)
-            self.guestcomboBox.setGeometry(QtCore.QRect(570, 530, 301, 61))
-            self.guestcomboBox.setObjectName('guestcomboBox')
-            self.guestcomboBox.setEnabled(False)
-            self.guestcomboBox.addItem('SelectGuestTeamLabel')
-            self.reset_items(self.guestcomboBox)
-
-            # A label of colon between Team Icons
-            self.colon = QtWidgets.QLabel(Dialog)
-            self.colon.setGeometry(QtCore.QRect(1100, 180, 20, 61))
-            self.colon.setObjectName(':')
-
-            # A label that shows home Team Icon
-            self.homeIcon = QtWidgets.QLabel(Dialog)
-            self.homeIcon.setGeometry(980,150, 100, 100)
-            self.homeIcon.setObjectName('homeIcon')
-            self.homeIcon.setText("")
-
-            # A label that shows guest Team Icon
-            self.guestIcon = QtWidgets.QLabel(Dialog)
-            self.guestIcon.setGeometry(1130, 150, 100, 100)
-            self.guestIcon.setObjectName('guestIcon')
-            self.guestIcon.setText("")
-
-            # select the Algo label, to change the text have a look at the retranslateUI funktion
-            self.SelectAlgoLabel = QtWidgets.QLabel(Dialog)
-            self.SelectAlgoLabel.setGeometry(QtCore.QRect(30, 30, 371, 31))
-            self.SelectAlgoLabel.setObjectName('SelectAlgoLabel')
-
-
-            # start training button
-            self.trainingbutton = QtWidgets.QPushButton(Dialog)
-            self.trainingbutton.setGeometry(QtCore.QRect(100, 660, 331, 101))
-            self.trainingbutton.setObjectName('Start training')
-            self.trainingbutton.clicked.connect(self.trainingcall)
-            self.trainingbutton.setEnabled(False)
-
-            # show result button
-            self.resultsbutton = QtWidgets.QPushButton(Dialog)
-            self.resultsbutton.setGeometry(QtCore.QRect(430, 660, 331, 101))
-            self.resultsbutton.setObjectName('Show results')
-            self.resultsbutton.clicked.connect(self.resultscall)
-            self.resultsbutton.setEnabled(False)
-
-            # this label will show the results
-            self.resultLabel = QtWidgets.QLabel(Dialog)
-            self.resultLabel.setGeometry(QtCore.QRect(1000, 250, 371, 31))
-            self.resultLabel.setObjectName('resultLabel')
-
-            # show statistic button
-            self.statisticbutton = QtWidgets.QPushButton(Dialog)
-            self.statisticbutton.setGeometry(QtCore.QRect(1100, 660, 90, 30))
-            self.statisticbutton.setObjectName('more statistics')
-            self.statisticbutton.clicked.connect(self.statisticscall)
-            self.statisticbutton.setEnabled(False)
-
-            # call the retranslate
-            self.retranslateUi(Dialog)
-
-            # ok button
-            self.buttonBox.accepted.connect(Dialog.accept)
-
-            # cancel button
-            self.buttonBox.rejected.connect(Dialog.reject)
-
-            QtCore.QMetaObject.connectSlotsByName(Dialog)
-
-            # load available data
-            crawler.refresh_ui_cache()
-            self.avail = crawler.load_cache_index()
-            self.next = crawler.load_matchdata('next')
-
-            for season in self.avail['season'].values:
-                self.StartYearcomboBox.addItem(str(season), season)
-                self.EndYearcomboBox.addItem(str(season), season)
-            self.StartYearcomboBox.currentIndexChanged.connect(self.show_start_days)
-            self.EndYearcomboBox.currentIndexChanged.connect(self.show_end_days)
-
-        def show_start_days(self, index):
-            self.reset_items(self.StartDaycomboBox)
-            season = self.StartYearcomboBox.itemData(index)
-            matchdays = self.avail.loc[self.avail['season'] == season, 'availMatchdays'].values[0]
-            for day in range(1, matchdays + 1):
-                self.StartDaycomboBox.addItem(str(day), day)
-            self.StartDaycomboBox.setCurrentIndex(1)
-            self.StartDaycomboBox.setEnabled(True)
-
-        def show_end_days(self, index):
-            self.reset_items(self.EndDaycomboBox)
-            season = self.EndYearcomboBox.itemData(index)
-            matchdays = self.avail.loc[self.avail['season'] == season, 'availMatchdays'].values[0]
-            for day in range(1, matchdays + 1):
-                self.EndDaycomboBox.addItem(str(day), day)
-            self.EndDaycomboBox.setCurrentIndex(matchdays)
-            self.EndDaycomboBox.setEnabled(True)
-
-        def reset_items(self, box):
-            """Clears all but the first item from a given Combobox.
-
-            Args:
-                box (PyQt5.QtWidgets.QComboBox): Combobox that will be cleared.
-            """
-            label = box.itemText(0)
-            box.clear()
-            box.addItem(label, None)
-            box.model().item(0).setEnabled(False)
-
-
-        def crawlercall(self):
-            """Gets the data between the chosen timeframe and filters it for the home team and guest team. Then it fills the combobox
-            for the home team and guest team with the teams names.
-            """
-            self.crawlerbutton.setEnabled(False)
-            self.homecomboBox.setEnabled(False)
-            self.guestcomboBox.setEnabled(False)
-            self.trainingbutton.setEnabled(False)
-            self.resultsbutton.setEnabled(False)
-            self.reset_items(self.homecomboBox)
-            self.reset_items(self.guestcomboBox)
-            fromSeason = self.StartYearcomboBox.currentData()
-            fromDay = self.StartDaycomboBox.currentData()
-            toSeason = self.EndYearcomboBox.currentData()
-            toDay = self.EndDaycomboBox.currentData()
-            forceUpdate = self.forceUpdateBox.isChecked()
-            if None in (fromSeason, fromDay, toSeason, toDay):
-                message = 'Selected interval incomplete.'
-                QMessageBox.warning(self, 'Invalid interval', message)
-            elif (fromSeason == toSeason and fromDay > toDay) or (fromSeason > toSeason):
-                message = 'Please select a valid time interval.'
-                QMessageBox.warning(self, 'Invalid interval', message)
-            else:
-                self.matchdata = crawler.get_data(
-                    fromSeason, fromDay, toSeason, toDay, forceUpdate)
-                self.teamdata = crawler.get_teams(self.matchdata)
-                self.currentData = self.matchdata
-                teamList = self.teamdata.to_dict('records')
-                for team in teamList:
-                    self.homecomboBox.addItem(team['name'], team['ID'])
-                    self.guestcomboBox.addItem(team['name'], team['ID'])
-                self.homecomboBox.setEnabled(True)
-                self.guestcomboBox.setEnabled(True)
-                self.algocomboBox.setEnabled(True)
-                self.trainingbutton.setEnabled(True)
-            self.crawlerbutton.setEnabled(True)
-
-
-
-        def trainAlgo(self):
-            """predicts the winner with the models.py algorithms.
-
-             Returns:
-                a list (float), the win rates
-            """
-            homeTeamID = self.homecomboBox.currentData()
-            guestTeamID = self.guestcomboBox.currentData()
-            if None in (homeTeamID, guestTeamID):
-                QMessageBox.warning(self, 'Invalid Teams', 'Please select a home and guest team.')
-                return  # exit function
-            elif homeTeamID == guestTeamID:
-                QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and guest teams.')
-                return
-
-            # depending on the text in the combobox, the algorithm is choosen
-            if self.algocomboBox.currentText() == 'Baseline Algorithm':
-                model = BaselineAlgo(self.matchdata)
-                print('Baseline Algorithm')
-
-            elif self.algocomboBox.currentText() == 'Poisson Regression Algorithm':
-                model = PoissonRegression(self.matchdata)
-                print('Poisson Regression Algorithm')
-            elif self.algocomboBox.currentText() == 'Dixon Coles Algorithm':
-                print(self.matchdata)
-                model = DixonColes(self.matchdata)
-                print('Dixon Coles')
-
-            homeTeamName = str(self.homecomboBox.currentText())
-            guestTeamName = str(self.guestcomboBox.currentText())
-            predictionlist = model.predict(homeTeamName, guestTeamName)
-            self.resultsbutton.setEnabled(True)
-            self.statisticbutton.setEnabled(True)
-
-            return predictionlist
-            self.statisticbutton.setEnabled(True)
-
-        # this will get called when you press the Start training button
-        def trainingcall(self):
-            """
-            """
-            # train the algorithm and return the winner
-            self.trainAlgo()
-            # set the buttons text
-            self.trainingbutton.setText('Training finished')
-
-
-        # this will get called when you press the Show results button.
-        def resultscall(self):
-            """
-            """
-            self.homeIconCall()
-            self.guestIconCall()
-            predictionList = self.trainAlgo()
-            # set the result label text to the win rates
-            self.resultLabel.setText("home: " + str(round(predictionList[0]*100,2)) + "%" + "   "
-                                    + "draw: " + str(round(predictionList[1]*100,2)) + "%" + "   "
-                                    + "guest: " + str(round(predictionList[2]*100,2)) + "%")
-
-        # this will get called when you press the playday button.
-        def playdaycall(self):
-            print(self.next['season'].to_string() + self.next['datetime'].to_string())
-            print(self.next)
-            output = self.next.to_string()
-            list = self.next.to_dict('records')
-            print(list)
-            #self.playdayLabel.setText(self.next['datetime'].to_string + self.next['homeTeamName'].to_string + self.next['guestTeamName'].to_string)
-            self.playdayLabel.setText(self.next['season'].to_string(index=False)+"  " + self.next['datetime'].to_string(index=False)+"  " +
-            self.next['homeTeamName'].to_string(index=False)+"   vs   " + self.next['guestTeamName'].to_string(index=False))
-            print(output[1-200])
-
-        # this will get called when you select the guest Team.
-        def guestIconCall(self):
-            """
-            """
-            self.teamdata2 = crawler.get_teams(self.currentData)
-            icon = self.teamdata2.loc[self.teamdata2['name'] == self.guestcomboBox.currentText(),'icon'].values[0]
-            urllib.request.urlretrieve(icon,"guestIcon.png")
-            pixmap = QtGui.QPixmap("guestIcon.png")
-            self.guestIcon.setPixmap(pixmap.scaled(100, 100))
-
-            # this will get called when you select the home Team.
-        def homeIconCall(self):
-            """
-            """
-            self.teamdata2 = crawler.get_teams(self.currentData)
-            icon = self.teamdata2.loc[self.teamdata2['name'] == self.homecomboBox.currentText(), 'icon'].values[0]
-            urllib.request.urlretrieve(icon, "homeIcon.png")
-            pixmap = QtGui.QPixmap("homeIcon.png")
-            self.homeIcon.setPixmap(pixmap.scaled(100, 100))
-
-        # this will get called when you press the Show statistics button.
-        def statisticscall(self):
-            """
-            """
-            data_analytics.main(self.currentData,self.homecomboBox.currentText(), self.guestcomboBox.currentText())
-
-        def retranslateUi(self, Dialog):
-            """Rename all the objects to the desired names.
-
-            Args:
-                Dialog (PyQt5.QtWidgets.QDialog): Main window
-            """
-            _translate = QtCore.QCoreApplication.translate
-            Dialog.setWindowTitle(_translate('FuBaKI', 'FuBaKI'))
-            self.homecomboBox.setItemText(0, _translate('Dialog', '(Select Home Team)'))
-            self.crawlerbutton.setText(_translate('Dialog', 'Activate Crawler'))
-            self.playdaybutton.setText(_translate('Dialog', 'Show upcoming matches'))
-            self.guestcomboBox.setItemText(0, _translate('Dialog', '(Select Guest Team)'))
-            self.StartYearcomboBox.setItemText(0, _translate('Dialog', 'Season'))
-            self.StartDaycomboBox.setItemText(0, _translate('Dialog', 'Match Day'))
-            self.EndYearcomboBox.setItemText(0, _translate('Dialog', 'Season'))
-            self.EndDaycomboBox.setItemText(0, _translate('Dialog', 'Match Day'))
-            self.forceUpdateLabel.setText(_translate('Dialog', 'force re-caching'))
-            self.resultsbutton.setText(_translate('Dialog', 'Show results'))
-            self.trainingbutton.setText(_translate('Dialog', 'Start training'))
-            self.statisticbutton.setText(_translate('Dialog','more statistics'))
-            self.SelectTeamLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the home team and the guest team:</span></p></body></html>'))
-            self.SelectStartTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the start year and day:</span></p></body></html>'))
-            self.SelectAlgoLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the algorithm you want to use:</span></p></body></html>'))
-            self.SelectEndTimeLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>Select the end year and day:</span></p></body></html>'))
-            self.resultLabel.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:11pt;\'>  </span></p><p><br/></p></body></html>'))
-            self.colon.setText(_translate('Dialog', '<html><head/><body><p><span style=\' font-size:31pt;\'> : </span></p><p><br/></p></body></html>'))
-
-
-    # create the window
-    app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
+    app = QApplication(sys.argv)
+    path = {os.path.dirname(os.path.abspath(__file__))}
+    app.setWindowIcon(QtGui.QIcon(f'{path}/img/icon.png'))
+    window = FuBaKI()
+    window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
