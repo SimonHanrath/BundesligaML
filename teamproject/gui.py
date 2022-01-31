@@ -1,14 +1,8 @@
-# -*- coding: utf-8 -*-
 import os
 import sys
 import requests
-import urllib.request
 from teamproject import crawler, data_analytics, models
-from PIL import Image
-from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg
-from PyQt5.QtSvg import QSvgWidget
-# from svglib.svglib import svg2rlg
-# from reportlab.graphics import renderPM
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -25,6 +19,9 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QStyleFactory
 )
+# from PIL import Image
+# from PyQt5 import QtSvg
+# from PyQt5.QtSvg import QSvgWidget
 
 
 g_img_path = f'{os.path.dirname(os.path.abspath(__file__))}/img'
@@ -53,8 +50,8 @@ class FuBaKI(QWidget):
         self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
         self.selectAlgo.addItem('Poisson Regression', 'poisson')
         self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
-        self.selectAlgo.setCurrentIndex(1)
         self.selectAlgo.currentIndexChanged.connect(self.change_algo)
+        self.selectAlgo.setCurrentIndex(1)
 
         self.intvLabel = QLabel('Specify the interval of training data:')
         self.selectFromLabel = QLabel('From')
@@ -454,7 +451,6 @@ class FuBaKI(QWidget):
             pixmap = QtGui.QPixmap(f'{g_img_path}/none.png')
 
         self.homeIcon.setPixmap(pixmap.scaled(100, 100))
-
 
     def statisticscall(self):
         """Open window with detailed statistics.
