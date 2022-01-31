@@ -1,19 +1,14 @@
-Teamproject
+FubaKI
 -----------
 
-This serves as a skeleton for setting up new projects.
+FubaKI is a Bundesliga prediction programm. It allows anyone to predict the results of upcoming matches with machine learning algorithms.
 
-Usage
+Dependencies
 =====
 
-To get started, follow these steps:
+FubaKI supports Python 3.8+ .
 
-- Fork this repository to your project on github.
-- Invite your team members and us as collaborators in the settings tab
-- clone the repository to your machine: ``git clone git@github.com:<USERNAME>/swp-teamproject``
-- Look through the repository and try to understand its contents
-- remove what you don't need, adapt what needs to be changed in your
-  project (e.g. author, project and package names)
+Installation requires numpy, pandas and pyQT5.
 
 
 Environment
