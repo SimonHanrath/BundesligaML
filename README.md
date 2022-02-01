@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/python-v3.8%2B-orange)
+
 FubaKI
 -----------
 
@@ -36,9 +38,9 @@ Installation
 
 1. Clone this repository to your device
 
-2. Install the needed packages via "pip install"
+2. Install the needed packages via "pip install -e", this will install all the needed packages.
 
-3. Execute the "main.py" file
+3. Execute the "main.py" file via the command "teamproject"
 
 Data
 ============
