@@ -50,8 +50,9 @@ class FuBaKI(QWidget):
         self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
         self.selectAlgo.addItem('Poisson Regression', 'poisson')
         self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
-        self.selectAlgo.currentIndexChanged.connect(self.change_algo)
         self.selectAlgo.setCurrentIndex(1)
+        self.selectAlgo.currentIndexChanged.connect(self.change_algo)
+
 
         self.intvLabel = QLabel('Specify the interval of training data:')
         self.selectFromLabel = QLabel('From')
