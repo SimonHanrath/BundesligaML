@@ -34,6 +34,7 @@ class FuBaKI(QWidget):
         self.init_elements()
         self.init_layout()
         self.init_content()
+        self.selectAlgo.setCurrentIndex(1)
         self.init_style()
         self.resize(1000, 700)
 
@@ -43,14 +44,13 @@ class FuBaKI(QWidget):
         self.shortcutClose = QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
         self.shortcutClose.activated.connect(self.close)
 
-        self.selectAlgoLabel = QLabel('Select the desired algorithm:')
+        self.selectAlgoLabel = QLabel('Select the desired algorithm (triggers interval suggestion):')
         self.selectAlgo = QComboBox()
         self.selectAlgo.addItem('Prediction Algorithm')
         self.reset_items(self.selectAlgo)
         self.selectAlgo.addItem('Baseline Algorithm', 'baseline')
         self.selectAlgo.addItem('Poisson Regression', 'poisson')
         self.selectAlgo.addItem('Dixon Coles Algorithm', 'dixoncoles')
-        self.selectAlgo.setCurrentIndex(1)
         self.selectAlgo.currentIndexChanged.connect(self.change_algo)
 
         self.intvLabel = QLabel('Specify the interval of training data:')
@@ -59,7 +59,7 @@ class FuBaKI(QWidget):
         self.selectFromSeason.addItem('Season')
         self.reset_items(self.selectFromSeason)
         self.selectFromDay = QComboBox()
-        self.selectFromSeason.currentIndexChanged.connect(self.fill_from_day)
+        self.selectFromSeason.currentIndexChanged.connect(self.fill_from_matchday)
         self.selectFromDay.setEnabled(False)
         self.selectFromDay.addItem('Match Day')
         self.reset_items(self.selectFromDay)
@@ -68,11 +68,11 @@ class FuBaKI(QWidget):
         self.selectToSeason.addItem('Season')
         self.reset_items(self.selectToSeason)
         self.selectToDay = QComboBox()
-        self.selectToSeason.currentIndexChanged.connect(self.fill_to_day)
+        self.selectToSeason.currentIndexChanged.connect(self.fill_to_matchday)
         self.selectToDay.setEnabled(False)
         self.selectToDay.addItem('Match Day')
         self.reset_items(self.selectToDay)
-        self.intvForceUpdate = QCheckBox('force re-caching')
+        self.intvForceUpdate = QCheckBox('Force re-caching')
         self.crawlerButton = QPushButton('Fetch Data')
         self.crawlerButton.clicked.connect(self.crawlercall)
 
@@ -87,7 +87,7 @@ class FuBaKI(QWidget):
         self.reset_items(self.selectHomeTeam)
         self.selectGuestTeam = QComboBox()
         self.selectGuestTeam.setEnabled(False)
-        self.selectGuestTeam.addItem('Guest Team')
+        self.selectGuestTeam.addItem('Away Team')
         self.reset_items(self.selectGuestTeam)
         self.predictButton = QPushButton('Show Results')
         self.predictButton.clicked.connect(self.resultscall)
@@ -98,7 +98,7 @@ class FuBaKI(QWidget):
         self.colon.setFont(font)
         self.homeIcon = QLabel()
         self.guestIcon = QLabel()
-        self.resultLabel = QLabel()
+        self.predictLabel = QLabel()
         self.statisticButton = QPushButton('More Statistics…')
         self.statisticButton.clicked.connect(self.statisticscall)
         self.statisticButton.setEnabled(False)
@@ -111,7 +111,7 @@ class FuBaKI(QWidget):
         self.nextMatches.doubleClicked.connect(self.select_teams)
         self.nextMatches.setColumnCount(3)
         self.nextMatches.verticalHeader().setVisible(False)
-        columnLabels = ['Date', 'Home Team', 'Guest Team']
+        columnLabels = ['Date', 'Home Team', 'Away Team']
         self.nextMatches.setHorizontalHeaderLabels(columnLabels)
         self.nextMatches.setColumnWidth(0, 50)
         self.nextMatches.setColumnWidth(1, 150)
@@ -158,7 +158,7 @@ class FuBaKI(QWidget):
         predictLayout.addWidget(self.predictButton, 1)
         resultLayout = QHBoxLayout()
         resultLayout.addStretch(1)
-        resultLayout.addWidget(self.resultLabel)
+        resultLayout.addWidget(self.predictLabel)
         resultLayout.addStretch(4)
         statisticLayout = QHBoxLayout()
         statisticLayout.addWidget(self.statisticButton, 1)
@@ -226,7 +226,7 @@ class FuBaKI(QWidget):
             background: rgb(119,136,153);
         } QPushButton:pressed {
             background: rgb(55,65,74);
-            border: 1px solid rgb(255,255,255);
+            border: 1px solid rgb(236,236,236);
         } QPushButton:disabled {
             background: rgba(112,128,144,0.5);
         } QTableView {
@@ -236,7 +236,7 @@ class FuBaKI(QWidget):
         QApplication.setStyle(QStyleFactory.create('Fusion'))
         self.setStyleSheet(styleSheet)
 
-    def reset_items(self, box):
+    def reset_items(self, box: QComboBox):
         """Clears all but the first item from a given Combobox.
 
         Args:
@@ -247,34 +247,50 @@ class FuBaKI(QWidget):
         box.addItem(label, None)
         box.model().item(0).setEnabled(False)
 
-    def fill_from_day(self, index):
+    def reset_prediction(self):
+        """Reset all elements involved in displaying prediction results.
+        """
+        self.predictButton.setEnabled(False)
+        self.selectHomeTeam.setEnabled(False)
+        self.selectGuestTeam.setEnabled(False)
+        self.colon.setText('')
+        self.predictLabel.setText('')
+        self.homeIcon.setPixmap(QtGui.QPixmap())
+        self.guestIcon.setPixmap(QtGui.QPixmap())
+        self.statisticButton.setEnabled(False)
+
+    def fill_from_matchday(self, index):
         """Show available match days corresponding to the selected season, i.e.
         lower limit of the time interval.
 
         Args:
             index (int): Combobox index of the selected season.
         """
-        self.reset_items(self.selectFromDay)
         season = self.selectFromSeason.itemData(index)
+        matchdayIndex = self.selectFromDay.currentIndex()
+        self.reset_items(self.selectFromDay)
         matchdays = self.avail.loc[self.avail['season'] == season, 'availMatchdays'].values[0]
         for day in range(1, matchdays + 1):
             self.selectFromDay.addItem(str(day), day)
-        self.selectFromDay.setCurrentIndex(1)
+        autoSelect = min(matchdayIndex, self.selectFromDay.count() - 1)
+        self.selectFromDay.setCurrentIndex(autoSelect)
         self.selectFromDay.setEnabled(True)
 
-    def fill_to_day(self, index):
+    def fill_to_matchday(self, index):
         """Show available match days corresponding to the selected season, i.e.
         upper limit of the time interval.
 
         Args:
             index (int): Combobox index of the selected season.
         """
-        self.reset_items(self.selectToDay)
         season = self.selectToSeason.itemData(index)
+        matchdayIndex = self.selectToDay.currentIndex()
+        self.reset_items(self.selectToDay)
         matchdays = self.avail.loc[self.avail['season'] == season, 'availMatchdays'].values[0]
         for day in range(1, matchdays + 1):
             self.selectToDay.addItem(str(day), day)
-        self.selectToDay.setCurrentIndex(matchdays)
+        autoSelect = min(matchdayIndex, self.selectToDay.count() - 1)
+        self.selectToDay.setCurrentIndex(autoSelect)
         self.selectToDay.setEnabled(True)
 
     def change_algo(self, index):
@@ -284,58 +300,61 @@ class FuBaKI(QWidget):
         Args:
             index (int): Combobox index of the selected prediction algorithm.
         """
-        self.selectHomeTeam.setEnabled(False)
-        self.selectGuestTeam.setEnabled(False)
-        self.predictButton.setEnabled(False)
-        self.statisticButton.setEnabled(False)
-
+        self.reset_prediction()
         algo = self.selectAlgo.itemData(index)
-        toSeasonLast = self.selectToSeason.count() - 1
-        if algo is not None and toSeasonLast > 0:
-            self.selectToSeason.setCurrentIndex(toSeasonLast)
+        numSeasons = self.avail['season'].count()
+        if algo is not None and numSeasons > 0:
             if algo == 'baseline':
-                days = 7
-                fromSeason = toSeasonLast
-                while days > 0 and fromSeason > 1:
-                    self.selectFromSeason.setCurrentIndex(fromSeason)
-                    toDayLast = self.selectFromDay.count() - 1
-                    if toDayLast - days > 0:
-                        self.selectFromDay.setCurrentIndex(toDayLast - days)
-                    else:
-                        fromSeason = fromSeason - 1
-                    days = days - toDayLast
+                self.select_interval(0, 8)
             elif algo == 'poisson':
-                fromSeason = self.clamp(toSeasonLast - 2, 1)
-                self.selectFromSeason.setCurrentIndex(fromSeason)
-                toDayLast = self.selectToDay.count() - 1
-                self.selectFromDay.setCurrentIndex(self.clamp(toDayLast, 1))
+                self.select_interval(2, 0)
             elif algo == 'dixoncoles':
-                self.selectFromSeason.setCurrentIndex(1)
+                self.select_interval(numSeasons, 0)
+                self.selectFromDay.setCurrentIndex(1)
 
-    def clamp(self, num: int, min: int) -> int:
-        """Clamps a number to a given minimum.
+    def select_interval(self, seasons: int, matchdays: int):
+        """Automatically selects a given number of seasons and matchdays.
 
         Args:
-            num (int): An arbitrary number.
-            min (int): The desired minimum.
-
-        Returns:
-            Resulting number, clamped to the given minimum
+            seasons (int): Number of seasons that shall be selected.
+            matchdays (int): Number of match days that shall be selected.
         """
-        if num < 0:
-            return 0
-        else:
-            return num
+        assert seasons >= 0 and matchdays >= 0, \
+            'Number of seasons and match days must be positive.'
+        seasons = max(seasons - 1, 0)
+        toSeasonLast = self.selectToSeason.count() - 1
+        self.selectToSeason.setCurrentIndex(toSeasonLast)
+        toDayLast = self.selectToDay.count() - 1
+        self.selectToDay.setCurrentIndex(toDayLast)
+        fromSeason = max(toSeasonLast - seasons, 1)
+        self.selectFromSeason.setCurrentIndex(fromSeason)
+        self.selectFromDay.setCurrentIndex(toDayLast)
 
-    def select_teams(self):
+        while matchdays > 0:
+            matchdays -= 1
+            toDayLast = self.selectFromDay.count() - 1
+            if toDayLast - matchdays > 0:
+                self.selectFromDay.setCurrentIndex(toDayLast - matchdays)
+            elif fromSeason > 1:
+                fromSeason -= 1
+                matchdays += 1
+                self.selectFromSeason.setCurrentIndex(fromSeason)
+            else:
+                matchdays = 0
+                self.selectFromDay.setCurrentIndex(1)
+            matchdays -= toDayLast
+
+    def select_teams(self, item):
         """After double clicking on a row in next matches table, automatically
         select corresponding teams for prediction.
+
+        Args:
+            item (QTableWidgetItem): The clicked item (i.e. table cell).
         """
-        row = self.nextMatches.currentRow()
-        homeName = self.next.iloc[row]['homeTeamName']
-        guestName = self.next.iloc[row]['guestTeamName']
-        homeIndex = self.selectHomeTeam.findText(homeName, QtCore.Qt.MatchFixedString)
-        guestIndex = self.selectGuestTeam.findText(guestName, QtCore.Qt.MatchFixedString)
+        homeName = self.next.iloc[item.row()]['homeTeamName']
+        guestName = self.next.iloc[item.row()]['guestTeamName']
+        homeIndex = self.selectHomeTeam.findText(homeName, QtCore.Qt.MatchExactly)
+        guestIndex = self.selectGuestTeam.findText(guestName, QtCore.Qt.MatchExactly)
         if homeIndex >= 0 and self.selectHomeTeam.isEnabled():
             self.selectHomeTeam.setCurrentIndex(homeIndex)
         if guestIndex >= 0 and self.selectGuestTeam.isEnabled():
@@ -349,10 +368,9 @@ class FuBaKI(QWidget):
         self.selectHomeTeam.setEnabled(False)
         self.selectGuestTeam.setEnabled(False)
         self.trainingButton.setEnabled(False)
-        self.predictButton.setEnabled(False)
-        self.statisticButton.setEnabled(False)
         self.reset_items(self.selectHomeTeam)
         self.reset_items(self.selectGuestTeam)
+        self.reset_prediction()
         fromSeason = self.selectFromSeason.currentData()
         fromDay = self.selectFromDay.currentData()
         toSeason = self.selectToSeason.currentData()
@@ -393,6 +411,8 @@ class FuBaKI(QWidget):
 
         self.selectHomeTeam.setEnabled(True)
         self.selectGuestTeam.setEnabled(True)
+        if self.nextMatches.rowCount() > 0:
+            self.select_teams(self.nextMatches.item(0,0))
         self.predictButton.setEnabled(True)
         self.statisticButton.setEnabled(True)
 
@@ -402,55 +422,48 @@ class FuBaKI(QWidget):
         homeTeamID = self.selectHomeTeam.currentData()
         guestTeamID = self.selectGuestTeam.currentData()
         if None in (homeTeamID, guestTeamID):
-            QMessageBox.warning(self, 'Invalid Teams', 'Please select a home and guest team.')
+            QMessageBox.warning(self, 'Invalid Teams', 'Please select a home and away team.')
             return  # exit
         elif homeTeamID == guestTeamID:
-            QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and guest teams.')
+            QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and away teams.')
             return  # exit
 
         self.colon.setText(':')
-        self.display_home_icon()
-        self.display_guest_icon()
+        homePixmap = self.display_teamicon(self.selectHomeTeam.currentData())
+        self.homeIcon.setPixmap(homePixmap)
+        guestPixmap = self.display_teamicon(self.selectGuestTeam.currentData())
+        self.guestIcon.setPixmap(guestPixmap)
         homeTeamName = str(self.selectHomeTeam.currentText())
         guestTeamName = str(self.selectGuestTeam.currentText())
         predictionList = self.model.predict(homeTeamName, guestTeamName)
-        self.resultLabel.setText(f'home: {str(round(predictionList[0]*100, 2))}%   '
+        self.predictLabel.setText(f'home: {str(round(predictionList[0]*100, 2))}%   '
                                  + f'draw: {str(round(predictionList[1]*100, 2))}%   '
                                  + f'guest: {str(round(predictionList[2]*100, 2))}%')
 
-    def display_guest_icon(self):
-        """Display the icon of the guest team selected for prediction.
-        """
-        iconURL = self.teamdata.loc[self.teamdata['ID'] == self.selectGuestTeam.currentData(), 'icon'].values[0]
-        fileExt = iconURL.split('.')[-1]
-        iconPath = f'{crawler.g_cache_path}/guestIcon.{fileExt}'
-        response = requests.get(iconURL, stream=True)
-        if response.ok:
-            chunkSize = 32 * 1024
-            with open(iconPath, 'wb') as imageFile:
-                imageFile.writelines(response.iter_content(chunkSize))
-            pixmap = QtGui.QPixmap(iconPath)
-        else:
-            pixmap = QtGui.QPixmap(f'{g_img_path}/none.png')
-        self.guestIcon.setPixmap(pixmap.scaled(100, 100))
-
-    def display_home_icon(self):
+    def display_teamicon(self, team: int) -> QtGui.QPixmap:
         """Display the icon of the home team selected for prediction.
-        """
-        iconURL = self.teamdata.loc[self.teamdata['ID'] == self.selectHomeTeam.currentData(), 'icon'].values[0]
-        fileExt = iconURL.split('.')[-1]
-        iconPath = f'{crawler.g_cache_path}/homeIcon.{fileExt}'
 
-        response = requests.get(iconURL, stream=True)
+        Args:
+            team (int): The ID of the selected team.
+
+        Returns:
+            A QPixmap showing the desired team icon (or a dummy icon if image
+            was not found).
+        """
+
+        iconURL = self.teamdata.loc[self.teamdata['ID'] == team, 'icon'].values[0]
+        iconExtension = iconURL.split('.')[-1]
+        iconPath = f'{crawler.g_cache_path}/teamicon.{iconExtension}'
+        response = requests.get(iconURL, stream=True, headers={'User-agent': 'Mozilla/5.0'})
         if response.ok:
-            chunkSize = 32 * 1024
             with open(iconPath, 'wb') as imageFile:
-                imageFile.writelines(response.iter_content(chunkSize))
+                imageFile.writelines(response.iter_content(1024))
             pixmap = QtGui.QPixmap(iconPath)
         else:
-            pixmap = QtGui.QPixmap(f'{g_img_path}/none.png')
-
-        self.homeIcon.setPixmap(pixmap.scaled(100, 100))
+            pixmap = QtGui.QPixmap(f'{g_img_path}/none.svg')
+        pixmap = pixmap.scaled(100, 100, QtCore.Qt.KeepAspectRatio,
+            transformMode=QtCore.Qt.SmoothTransformation)
+        return pixmap
 
     def statisticscall(self):
         """Open window with detailed statistics.
