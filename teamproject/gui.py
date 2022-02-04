@@ -2,26 +2,14 @@ import os
 import sys
 import requests
 from teamproject import crawler, data_analytics, models
-from PyQt5 import QtCore, QtGui, QtWidgets
+# from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QIcon, QKeySequence, QPixmap
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QWidget,
-    QShortcut,
-    QMessageBox,
-    QHBoxLayout,
-    QVBoxLayout,
-    QPushButton,
-    QLabel,
-    QComboBox,
-    QCheckBox,
-    QTableWidget,
-    QTableWidgetItem,
-    QStyleFactory
-)
-# from PIL import Image
-# from PyQt5 import QtSvg
-# from PyQt5.QtSvg import QSvgWidget
+    QApplication, QWidget, QMessageBox, QStyleFactory, QShortcut,
+    QGridLayout, QHBoxLayout, QVBoxLayout,
+    QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView,
+    QCheckBox, QComboBox, QLabel, QPushButton)
 
 
 g_img_path = f'{os.path.dirname(os.path.abspath(__file__))}/img'
@@ -36,15 +24,15 @@ class FuBaKI(QWidget):
         self.init_content()
         self.selectAlgo.setCurrentIndex(1)
         self.init_style()
-        self.resize(1000, 700)
+        self.resize(775, 500)
 
     def init_elements(self):
-        self.shortcutQuit = QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.shortcutQuit = QShortcut(QKeySequence('Ctrl+Q'), self)
         self.shortcutQuit.activated.connect(self.close)
-        self.shortcutClose = QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
+        self.shortcutClose = QShortcut(QKeySequence('Ctrl+W'), self)
         self.shortcutClose.activated.connect(self.close)
 
-        self.selectAlgoLabel = QLabel('Select the desired algorithm (triggers interval suggestion):')
+        self.selectAlgoLabel = QLabel('Select the desired algorithm:')
         self.selectAlgo = QComboBox()
         self.selectAlgo.addItem('Prediction Algorithm')
         self.reset_items(self.selectAlgo)
@@ -81,20 +69,24 @@ class FuBaKI(QWidget):
         self.trainingButton.clicked.connect(self.trainingcall)
 
         self.selectTeamsLabel = QLabel('Pick teams for prediction:')
+        self.selectHomeLabel = QLabel('Home')
         self.selectHomeTeam = QComboBox()
         self.selectHomeTeam.setEnabled(False)
         self.selectHomeTeam.addItem('Home Team')
         self.reset_items(self.selectHomeTeam)
+        self.selectHomeTeam.currentIndexChanged.connect(self.predict_match)
+        self.selectGuestLabel = QLabel('Away')
         self.selectGuestTeam = QComboBox()
         self.selectGuestTeam.setEnabled(False)
         self.selectGuestTeam.addItem('Away Team')
         self.reset_items(self.selectGuestTeam)
+        self.selectGuestTeam.currentIndexChanged.connect(self.predict_match)
         self.predictButton = QPushButton('Show Results')
         self.predictButton.clicked.connect(self.resultscall)
         self.predictButton.setEnabled(False)
 
         self.colon = QLabel()
-        font = QtGui.QFont('Times New Roman', 35, weight=QtGui.QFont.Bold)
+        font = QFont('Times New Roman', 35, weight=QFont.Bold)
         self.colon.setFont(font)
         self.homeIcon = QLabel()
         self.guestIcon = QLabel()
@@ -105,7 +97,7 @@ class FuBaKI(QWidget):
 
         self.nextMatchesLabel = QLabel('Upcoming matches:')
         self.nextMatches = QTableWidget()
-        self.nextMatches.setMinimumWidth(250)
+        self.nextMatches.setMinimumWidth(280)
         self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
         self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.nextMatches.doubleClicked.connect(self.select_teams)
@@ -118,77 +110,68 @@ class FuBaKI(QWidget):
         self.nextMatches.setColumnWidth(2, 150)
         header = self.nextMatches.horizontalHeader()
         header.setHighlightSections(False)
-        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.Stretch)
 
     def init_layout(self):
-        algoLayout = QHBoxLayout()
-        algoLayout.addWidget(self.selectAlgo, 1)
-        algoLayout.addStretch(2)
-        intvLayout = QHBoxLayout()
-        intvLayout.addWidget(self.selectFromLabel)
-        intvLayout.addWidget(self.selectFromSeason, 1)
-        intvLayout.addWidget(self.selectFromDay, 1)
-        intvLayout.addSpacing(25)
-        intvLayout.addWidget(self.selectToLabel)
-        intvLayout.addWidget(self.selectToSeason, 1)
-        intvLayout.addWidget(self.selectToDay, 1)
-        recacheLayout = QHBoxLayout()
-        recacheLayout.addWidget(self.intvForceUpdate)
-        recacheLayout.addSpacing(25)
-        recacheLayout.addWidget(self.crawlerButton, 1)
-        recacheLayout.addStretch(2)
-        trainingLayout = QHBoxLayout()
-        trainingLayout.addWidget(self.trainingButton, 1)
-        trainingLayout.addStretch(2)
+        leftUILayout = QGridLayout()
+        spacing = QHBoxLayout()
+        spacing.addSpacing(5)
+        leftUILayout.addLayout(spacing, 0, 2)
+        leftUILayout.setColumnStretch(1, 2)
+        leftUILayout.setColumnStretch(2, 1)
+        leftUILayout.setColumnStretch(3, 2)
+        leftUILayout.addWidget(self.selectAlgoLabel, 0, 0, 1, 3)
+        leftUILayout.addWidget(self.selectAlgo, 1, 0, 1, 2)
+        leftUILayout.addWidget(QLabel(), 2, 0, 1, 3)
+        leftUILayout.setRowStretch(2, 1)
+        leftUILayout.addWidget(self.intvLabel, 3, 0, 1, 3)
+        leftUILayout.addWidget(self.selectFromLabel, 4, 0)
+        selectFromLayout = QHBoxLayout()
+        selectFromLayout.addWidget(self.selectFromSeason)
+        selectFromLayout.addWidget(self.selectFromDay)
+        leftUILayout.addLayout(selectFromLayout, 4, 1)
+        leftUILayout.addWidget(self.crawlerButton, 4, 3)
+        leftUILayout.addWidget(self.selectToLabel, 5, 0)
+        selectToLayout = QHBoxLayout()
+        selectToLayout.addWidget(self.selectToSeason)
+        selectToLayout.addWidget(self.selectToDay)
+        leftUILayout.addLayout(selectToLayout, 5, 1)
+        leftUILayout.addWidget(self.intvForceUpdate, 6, 1)
+        leftUILayout.addWidget(QLabel(), 7, 0, 1, 3)
+        leftUILayout.setRowStretch(7, 1)
+        leftUILayout.addWidget(self.trainingButton, 5, 3)
+        # leftUILayout.addWidget(QLabel(), 9, 0, 1, 3)
+        # leftUILayout.setRowStretch(9, 1)
+        leftUILayout.addWidget(self.selectTeamsLabel, 10, 0, 1, 3)
+        leftUILayout.addWidget(self.selectHomeLabel, 11, 0)
+        leftUILayout.addWidget(self.selectHomeTeam, 11, 1)
+        leftUILayout.addWidget(self.predictButton, 11, 3)
+        leftUILayout.addWidget(self.selectGuestLabel, 12, 0)
+        leftUILayout.addWidget(self.selectGuestTeam, 12, 1)
+        leftUILayout.addWidget(QLabel(), 13, 0, 1, 3)
+        leftUILayout.setRowStretch(13, 1)
         iconLayout = QHBoxLayout()
         iconLayout.addStretch(1)
         iconLayout.addWidget(self.homeIcon)
-        iconLayout.addSpacing(10)
         iconLayout.addWidget(self.colon)
-        iconLayout.addSpacing(10)
         iconLayout.addWidget(self.guestIcon)
-        iconLayout.addStretch(3)
-        predictLayout = QHBoxLayout()
-        predictLayout.addWidget(self.selectHomeTeam, 2)
-        predictLayout.addWidget(self.selectGuestTeam, 2)
-        predictLayout.addSpacing(25)
-        predictLayout.addWidget(self.predictButton, 1)
-        resultLayout = QHBoxLayout()
-        resultLayout.addStretch(1)
-        resultLayout.addWidget(self.predictLabel)
-        resultLayout.addStretch(4)
-        statisticLayout = QHBoxLayout()
-        statisticLayout.addWidget(self.statisticButton, 1)
-        statisticLayout.addStretch(2)
+        iconLayout.addStretch(1)
+        resultLayout = QVBoxLayout()
+        resultLayout.addLayout(iconLayout)
+        resultLayout.addWidget(self.predictLabel, Qt.AlignHCenter)
+        leftUILayout.addLayout(resultLayout, 14, 0, 1, 2)
+        leftUILayout.addWidget(self.statisticButton, 14, 3, Qt.AlignBottom)
 
-        leftUILayout = QVBoxLayout()
-        leftUILayout.addWidget(self.selectAlgoLabel)
-        leftUILayout.addLayout(algoLayout)
-        leftUILayout.addStretch(3)
-        leftUILayout.addWidget(self.intvLabel)
-        leftUILayout.addLayout(intvLayout)
-        leftUILayout.addSpacing(5)
-        leftUILayout.addLayout(recacheLayout)
-        leftUILayout.addStretch(1)
-        leftUILayout.addLayout(trainingLayout)
-        leftUILayout.addStretch(3)
-        leftUILayout.addWidget(self.selectTeamsLabel)
-        leftUILayout.addLayout(predictLayout)
-        leftUILayout.addStretch(1)
-        leftUILayout.addLayout(iconLayout)
-        leftUILayout.addLayout(resultLayout)
-        leftUILayout.addStretch(1)
-        leftUILayout.addLayout(statisticLayout)
         rightLayout = QVBoxLayout()
         rightLayout.addWidget(self.nextMatchesLabel)
         rightLayout.addWidget(self.nextMatches)
 
         ui = QHBoxLayout()
         ui.addLayout(leftUILayout, 2)
-        ui.addSpacing(50)
+        ui.addSpacing(30)
         ui.addLayout(rightLayout, 1)
         self.setLayout(ui)
 
@@ -255,8 +238,8 @@ class FuBaKI(QWidget):
         self.selectGuestTeam.setEnabled(False)
         self.colon.setText('')
         self.predictLabel.setText('')
-        self.homeIcon.setPixmap(QtGui.QPixmap())
-        self.guestIcon.setPixmap(QtGui.QPixmap())
+        self.homeIcon.setPixmap(QPixmap())
+        self.guestIcon.setPixmap(QPixmap())
         self.statisticButton.setEnabled(False)
 
     def fill_from_matchday(self, index):
@@ -353,8 +336,8 @@ class FuBaKI(QWidget):
         """
         homeName = self.next.iloc[item.row()]['homeTeamName']
         guestName = self.next.iloc[item.row()]['guestTeamName']
-        homeIndex = self.selectHomeTeam.findText(homeName, QtCore.Qt.MatchExactly)
-        guestIndex = self.selectGuestTeam.findText(guestName, QtCore.Qt.MatchExactly)
+        homeIndex = self.selectHomeTeam.findText(homeName, Qt.MatchExactly)
+        guestIndex = self.selectGuestTeam.findText(guestName, Qt.MatchExactly)
         if homeIndex >= 0 and self.selectHomeTeam.isEnabled():
             self.selectHomeTeam.setCurrentIndex(homeIndex)
         if guestIndex >= 0 and self.selectGuestTeam.isEnabled():
@@ -412,7 +395,7 @@ class FuBaKI(QWidget):
         self.selectHomeTeam.setEnabled(True)
         self.selectGuestTeam.setEnabled(True)
         if self.nextMatches.rowCount() > 0:
-            self.select_teams(self.nextMatches.item(0,0))
+            self.select_teams(self.nextMatches.item(0, 0))
         self.predictButton.setEnabled(True)
         self.statisticButton.setEnabled(True)
 
@@ -437,10 +420,15 @@ class FuBaKI(QWidget):
         guestTeamName = str(self.selectGuestTeam.currentText())
         predictionList = self.model.predict(homeTeamName, guestTeamName)
         self.predictLabel.setText(f'home: {str(round(predictionList[0]*100, 2))}%   '
-                                 + f'draw: {str(round(predictionList[1]*100, 2))}%   '
-                                 + f'guest: {str(round(predictionList[2]*100, 2))}%')
+                                  + f'draw: {str(round(predictionList[1]*100, 2))}%   '
+                                  + f'guest: {str(round(predictionList[2]*100, 2))}%')
 
-    def display_teamicon(self, team: int) -> QtGui.QPixmap:
+    def predict_match(self):
+        """Compute and display prediction results.
+        """
+        pass
+
+    def display_teamicon(self, team: int) -> QPixmap:
         """Display the icon of the home team selected for prediction.
 
         Args:
@@ -450,19 +438,19 @@ class FuBaKI(QWidget):
             A QPixmap showing the desired team icon (or a dummy icon if image
             was not found).
         """
-
         iconURL = self.teamdata.loc[self.teamdata['ID'] == team, 'icon'].values[0]
         iconExtension = iconURL.split('.')[-1]
         iconPath = f'{crawler.g_cache_path}/teamicon.{iconExtension}'
+
         response = requests.get(iconURL, stream=True, headers={'User-agent': 'Mozilla/5.0'})
         if response.ok:
             with open(iconPath, 'wb') as imageFile:
                 imageFile.writelines(response.iter_content(1024))
-            pixmap = QtGui.QPixmap(iconPath)
+            pixmap = QPixmap(iconPath)
         else:
-            pixmap = QtGui.QPixmap(f'{g_img_path}/none.svg')
-        pixmap = pixmap.scaled(100, 100, QtCore.Qt.KeepAspectRatio,
-            transformMode=QtCore.Qt.SmoothTransformation)
+            pixmap = QPixmap(f'{g_img_path}/none.svg')
+        pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio, transformMode=Qt.SmoothTransformation)
+        pixmap.setDevicePixelRatio(2.0)
         return pixmap
 
     def statisticscall(self):
@@ -476,12 +464,14 @@ class FuBaKI(QWidget):
         elif homeTeamID == guestTeamID:
             QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and guest teams.')
             return  # exit
-        data_analytics.main(self.matchdata, self.selectHomeTeam.currentText(), self.selectGuestTeam.currentText())
+        homeTeamName = self.selectHomeTeam.currentText()
+        guestTeamName = self.selectGuestTeam.currentText()
+        data_analytics.main(self.matchdata, homeTeamName, guestTeamName)
 
 
 def main():
     app = QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(f'{g_img_path}/icon.png'))
+    app.setWindowIcon(QIcon(f'{g_img_path}/icon.png'))
     # app.setApplicationName('FuBaKI')
     window = FuBaKI()
     window.show()

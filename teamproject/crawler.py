@@ -79,9 +79,9 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def refresh_ui_cache():
-    """Collects and executes all functions refreshing cached data which will be
-    displayed in the GUI. It is possible to call the functions separately to
-    decrease startup time of the GUI.
+    """Collects and executes all functions refreshing cached data (which will
+    be displayed in the GUI). Using threading and calling the functions
+    separately accelerates startup time of the GUI.
     """
     fetch_avail_seasons()
     fetch_avail_matchdays()
