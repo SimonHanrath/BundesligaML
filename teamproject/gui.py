@@ -1,6 +1,6 @@
 import os
 import sys
-import requests
+import requests.exceptions
 from teamproject import crawler, data_analytics, models
 # from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
@@ -98,7 +98,7 @@ class FuBaKI(QWidget):
         self.nextMatches.setMinimumWidth(280)
         self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
         self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.nextMatches.doubleClicked.connect(self.select_teams)
+        self.nextMatches.clicked.connect(self.select_teams)
         self.nextMatches.setColumnCount(3)
         self.nextMatches.verticalHeader().setVisible(False)
         columnLabels = ['Date', 'Home Team', 'Away Team']
@@ -114,43 +114,44 @@ class FuBaKI(QWidget):
         header.setSectionResizeMode(2, QHeaderView.Stretch)
 
     def init_layout(self):
-        leftUILayout = QGridLayout()
+        rightUILayout = QGridLayout()
         spacing = QHBoxLayout()
         spacing.addSpacing(5)
-        leftUILayout.addLayout(spacing, 0, 2)
-        leftUILayout.setColumnStretch(1, 2)
-        leftUILayout.setColumnStretch(2, 1)
-        leftUILayout.setColumnStretch(3, 2)
-        leftUILayout.addWidget(self.selectAlgoLabel, 0, 0, 1, 3)
-        leftUILayout.addWidget(self.selectAlgo, 1, 0, 1, 2)
-        leftUILayout.addWidget(QLabel(), 2, 0, 1, 3)
-        leftUILayout.setRowStretch(2, 1)
-        leftUILayout.addWidget(self.intvLabel, 3, 0, 1, 3)
-        leftUILayout.addWidget(self.selectFromLabel, 4, 0)
+        rightUILayout.addLayout(spacing, 0, 2)
+        rightUILayout.setColumnStretch(1, 2)
+        rightUILayout.setColumnStretch(2, 1)
+        rightUILayout.setColumnStretch(3, 2)
+        rightUILayout.addWidget(self.selectAlgoLabel, 0, 0, 1, 3)
+        rightUILayout.addWidget(self.selectAlgo, 1, 0, 1, 2)
+        rightUILayout.addWidget(QLabel(), 2, 0, 1, 3)
+        rightUILayout.setRowStretch(2, 1)
+        rightUILayout.addWidget(self.intvLabel, 3, 0, 1, 3)
+        rightUILayout.addWidget(self.selectFromLabel, 4, 0)
         selectFromLayout = QHBoxLayout()
         selectFromLayout.addWidget(self.selectFromSeason)
         selectFromLayout.addWidget(self.selectFromDay)
-        leftUILayout.addLayout(selectFromLayout, 4, 1)
-        leftUILayout.addWidget(self.crawlerButton, 4, 3)
-        leftUILayout.addWidget(self.selectToLabel, 5, 0)
+        rightUILayout.addLayout(selectFromLayout, 4, 1)
+        rightUILayout.addWidget(self.crawlerButton, 4, 3)
+        rightUILayout.addWidget(self.selectToLabel, 5, 0)
         selectToLayout = QHBoxLayout()
         selectToLayout.addWidget(self.selectToSeason)
         selectToLayout.addWidget(self.selectToDay)
-        leftUILayout.addLayout(selectToLayout, 5, 1)
-        leftUILayout.addWidget(self.intvForceUpdate, 6, 1)
-        leftUILayout.addWidget(QLabel(), 7, 0, 1, 3)
-        leftUILayout.setRowStretch(7, 1)
-        leftUILayout.addWidget(self.trainingButton, 5, 3)
-        # leftUILayout.addWidget(QLabel(), 9, 0, 1, 3)
-        # leftUILayout.setRowStretch(9, 1)
-        leftUILayout.addWidget(self.selectTeamsLabel, 10, 0, 1, 3)
-        leftUILayout.addWidget(self.selectHomeLabel, 11, 0)
-        leftUILayout.addWidget(self.selectHomeTeam, 11, 1)
-        leftUILayout.addWidget(self.predictButton, 11, 3)
-        leftUILayout.addWidget(self.selectGuestLabel, 12, 0)
-        leftUILayout.addWidget(self.selectGuestTeam, 12, 1)
-        leftUILayout.addWidget(QLabel(), 13, 0, 1, 3)
-        leftUILayout.setRowStretch(13, 1)
+        rightUILayout.addLayout(selectToLayout, 5, 1)
+        rightUILayout.addWidget(self.trainingButton, 5, 3)
+        rightUILayout.addWidget(self.intvForceUpdate, 6, 1)
+        rightUILayout.addWidget(QLabel(), 7, 0, 1, 3)
+        rightUILayout.setRowStretch(7, 1)
+        # rightUILayout.addWidget(QLabel(), 9, 0, 1, 3)
+        # rightUILayout.setRowStretch(9, 1)
+        rightUILayout.addWidget(self.selectTeamsLabel, 8, 0, 1, 3)
+        rightUILayout.addWidget(self.selectHomeLabel, 9, 0)
+        rightUILayout.addWidget(self.selectHomeTeam, 9, 1)
+        rightUILayout.addWidget(self.predictButton, 9, 3)
+        rightUILayout.addWidget(self.selectGuestLabel, 10, 0)
+        rightUILayout.addWidget(self.selectGuestTeam, 10, 1)
+        rightUILayout.addWidget(self.statisticButton, 10, 3)
+        rightUILayout.addWidget(QLabel(), 11, 0, 1, 3)
+        rightUILayout.setRowStretch(11, 1)
         iconLayout = QHBoxLayout()
         iconLayout.addStretch(1)
         iconLayout.addWidget(self.homeIcon)
@@ -160,17 +161,16 @@ class FuBaKI(QWidget):
         resultLayout = QVBoxLayout()
         resultLayout.addLayout(iconLayout)
         resultLayout.addWidget(self.predictLabel, Qt.AlignHCenter)
-        leftUILayout.addLayout(resultLayout, 14, 0, 1, 2)
-        leftUILayout.addWidget(self.statisticButton, 14, 3, Qt.AlignBottom)
+        rightUILayout.addLayout(resultLayout, 12, 0, 1, 2)
 
-        rightLayout = QVBoxLayout()
-        rightLayout.addWidget(self.nextMatchesLabel)
-        rightLayout.addWidget(self.nextMatches)
+        leftUILayout = QVBoxLayout()
+        leftUILayout.addWidget(self.nextMatchesLabel)
+        leftUILayout.addWidget(self.nextMatches)
 
         ui = QHBoxLayout()
         ui.addLayout(leftUILayout, 2)
         ui.addSpacing(30)
-        ui.addLayout(rightLayout, 1)
+        ui.addLayout(rightUILayout, 3)
         self.setLayout(ui)
 
     def init_content(self):
@@ -194,7 +194,7 @@ class FuBaKI(QWidget):
 
     def init_style(self):
         styleSheet = """
-        QLabel, QHeaderView, QTableView {
+        QLabel, QHeaderView, QTableView, QCheckBox {
             color: rgb(55,65,74);
         } QPushButton {
             background: rgb(112,128,144);
@@ -240,7 +240,7 @@ class FuBaKI(QWidget):
         self.guestIcon.setPixmap(QPixmap())
         self.statisticButton.setEnabled(False)
 
-    def change_from_season(self, index):
+    def change_from_season(self, index: int):
         """Show available match days corresponding to the selected season, i.e.
         lower limit of the time interval.
 
@@ -257,7 +257,7 @@ class FuBaKI(QWidget):
         self.selectFromDay.setCurrentIndex(autoSelect)
         self.selectFromDay.setEnabled(True)
 
-    def change_to_season(self, index):
+    def change_to_season(self, index: int):
         """Show available match days corresponding to the selected season, i.e.
         upper limit of the time interval.
 
@@ -325,9 +325,9 @@ class FuBaKI(QWidget):
                 self.selectFromDay.setCurrentIndex(1)
             matchdays -= toDayLast
 
-    def select_teams(self, item):
-        """After double clicking on a row in next matches table, automatically
-        select corresponding teams for prediction.
+    def select_teams(self, item: QTableWidgetItem):
+        """Automatically select corresponding teams for prediction after
+        clicking on a row in next matches table.
 
         Args:
             item (QTableWidgetItem): The clicked item (i.e. table cell).
@@ -429,8 +429,7 @@ class FuBaKI(QWidget):
         """
         homeTeamID = self.selectHomeTeam.itemData(index)
         if homeTeamID is not None:
-            homePixmap = self.display_teamicon(homeTeamID)
-            self.homeIcon.setPixmap(homePixmap)
+            self.homeIcon.setPixmap(self.display_teamicon(homeTeamID))
             self.predictLabel.setText('')
 
     def change_guest_team(self, index: int):
@@ -441,8 +440,7 @@ class FuBaKI(QWidget):
         """
         guestTeamID = self.selectHomeTeam.itemData(index)
         if guestTeamID is not None:
-            guestPixmap = self.display_teamicon(guestTeamID)
-            self.guestIcon.setPixmap(guestPixmap)
+            self.guestIcon.setPixmap(self.display_teamicon(guestTeamID))
             self.predictLabel.setText('')
 
     def display_teamicon(self, team: int) -> QPixmap:
@@ -459,14 +457,16 @@ class FuBaKI(QWidget):
         iconURL = self.teamdata.loc[self.teamdata['ID'] == team, 'icon'].values[0]
         iconExtension = iconURL.split('.')[-1]
         iconPath = f'{crawler.g_cache_path}/teamicon.{iconExtension}'
-
-        response = requests.get(iconURL, stream=True, headers={'User-agent': 'Mozilla/5.0'})
-        if response.ok:
+        try:
+            response = requests.get(iconURL, stream=True, headers={'User-agent': 'Mozilla/5.0'})
+            response.raise_for_status()
+        except (requests.exceptions.HTTPError, requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError):
+            pixmap = QPixmap(f'{g_img_path}/none.svg')
+        else:
             with open(iconPath, 'wb') as imageFile:
                 imageFile.writelines(response.iter_content(1024))
             pixmap = QPixmap(iconPath)
-        else:
-            pixmap = QPixmap(f'{g_img_path}/none.svg')
         pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio, transformMode=Qt.SmoothTransformation)
         pixmap.setDevicePixelRatio(2.0)
         return pixmap
