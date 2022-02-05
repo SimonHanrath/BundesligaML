@@ -80,7 +80,7 @@ class FuBaKI(QWidget):
         self.reset_items(self.selectGuestTeam)
         self.selectGuestTeam.currentIndexChanged.connect(self.change_guest_team)
         self.predictButton = QPushButton('Show Results')
-        self.predictButton.clicked.connect(self.predict_match)
+        self.predictButton.clicked.connect(self.predict_result)
         self.predictButton.setEnabled(False)
 
         self.colon = QLabel()
