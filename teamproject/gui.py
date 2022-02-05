@@ -24,13 +24,11 @@ class FuBaKI(QWidget):
         self.init_content()
         self.selectAlgo.setCurrentIndex(1)
         self.init_style()
-        self.resize(775, 500)
+        # self.resize(775, 450)
 
     def init_elements(self):
-        self.shortcutQuit = QShortcut(QKeySequence('Ctrl+Q'), self)
-        self.shortcutQuit.activated.connect(self.close)
-        self.shortcutClose = QShortcut(QKeySequence('Ctrl+W'), self)
-        self.shortcutClose.activated.connect(self.close)
+        self.shortcutCloseWindow = QShortcut(QKeySequence('Ctrl+W'), self)
+        self.shortcutCloseWindow.activated.connect(self.close)
 
         self.selectAlgoLabel = QLabel('Select the desired algorithm:')
         self.selectAlgo = QComboBox()
@@ -47,7 +45,7 @@ class FuBaKI(QWidget):
         self.selectFromSeason.addItem('Season')
         self.reset_items(self.selectFromSeason)
         self.selectFromDay = QComboBox()
-        self.selectFromSeason.currentIndexChanged.connect(self.fill_from_matchday)
+        self.selectFromSeason.currentIndexChanged.connect(self.change_from_season)
         self.selectFromDay.setEnabled(False)
         self.selectFromDay.addItem('Match Day')
         self.reset_items(self.selectFromDay)
@@ -56,7 +54,7 @@ class FuBaKI(QWidget):
         self.selectToSeason.addItem('Season')
         self.reset_items(self.selectToSeason)
         self.selectToDay = QComboBox()
-        self.selectToSeason.currentIndexChanged.connect(self.fill_to_matchday)
+        self.selectToSeason.currentIndexChanged.connect(self.change_to_season)
         self.selectToDay.setEnabled(False)
         self.selectToDay.addItem('Match Day')
         self.reset_items(self.selectToDay)
@@ -74,15 +72,15 @@ class FuBaKI(QWidget):
         self.selectHomeTeam.setEnabled(False)
         self.selectHomeTeam.addItem('Home Team')
         self.reset_items(self.selectHomeTeam)
-        self.selectHomeTeam.currentIndexChanged.connect(self.predict_match)
+        self.selectHomeTeam.currentIndexChanged.connect(self.change_home_team)
         self.selectGuestLabel = QLabel('Away')
         self.selectGuestTeam = QComboBox()
         self.selectGuestTeam.setEnabled(False)
         self.selectGuestTeam.addItem('Away Team')
         self.reset_items(self.selectGuestTeam)
-        self.selectGuestTeam.currentIndexChanged.connect(self.predict_match)
+        self.selectGuestTeam.currentIndexChanged.connect(self.change_guest_team)
         self.predictButton = QPushButton('Show Results')
-        self.predictButton.clicked.connect(self.resultscall)
+        self.predictButton.clicked.connect(self.predict_match)
         self.predictButton.setEnabled(False)
 
         self.colon = QLabel()
@@ -242,7 +240,7 @@ class FuBaKI(QWidget):
         self.guestIcon.setPixmap(QPixmap())
         self.statisticButton.setEnabled(False)
 
-    def fill_from_matchday(self, index):
+    def change_from_season(self, index):
         """Show available match days corresponding to the selected season, i.e.
         lower limit of the time interval.
 
@@ -259,7 +257,7 @@ class FuBaKI(QWidget):
         self.selectFromDay.setCurrentIndex(autoSelect)
         self.selectFromDay.setEnabled(True)
 
-    def fill_to_matchday(self, index):
+    def change_to_season(self, index):
         """Show available match days corresponding to the selected season, i.e.
         upper limit of the time interval.
 
@@ -399,7 +397,7 @@ class FuBaKI(QWidget):
         self.predictButton.setEnabled(True)
         self.statisticButton.setEnabled(True)
 
-    def resultscall(self):
+    def predict_result(self):
         """Compute and display prediction results.
         """
         homeTeamID = self.selectHomeTeam.currentData()
@@ -419,14 +417,33 @@ class FuBaKI(QWidget):
         homeTeamName = str(self.selectHomeTeam.currentText())
         guestTeamName = str(self.selectGuestTeam.currentText())
         predictionList = self.model.predict(homeTeamName, guestTeamName)
-        self.predictLabel.setText(f'home: {str(round(predictionList[0]*100, 2))}%   '
-                                  + f'draw: {str(round(predictionList[1]*100, 2))}%   '
-                                  + f'guest: {str(round(predictionList[2]*100, 2))}%')
+        self.predictLabel.setText(f'Home: {round(predictionList[0]*100, 2)}%   '
+                                  + f'Draw: {round(predictionList[1]*100, 2)}%   '
+                                  + f'Away: {round(predictionList[2]*100, 2)}%')
 
-    def predict_match(self):
-        """Compute and display prediction results.
+    def change_home_team(self, index: int):
+        """Display the selected home team's icon.
+
+        Args:
+            index (int): Combobox index of the selected home team.
         """
-        pass
+        homeTeamID = self.selectHomeTeam.itemData(index)
+        if homeTeamID is not None:
+            homePixmap = self.display_teamicon(homeTeamID)
+            self.homeIcon.setPixmap(homePixmap)
+            self.predictLabel.setText('')
+
+    def change_guest_team(self, index: int):
+        """Display the selected away team's icon.
+
+        Args:
+            index (int): Combobox index of the selected away team.
+        """
+        guestTeamID = self.selectHomeTeam.itemData(index)
+        if guestTeamID is not None:
+            guestPixmap = self.display_teamicon(guestTeamID)
+            self.guestIcon.setPixmap(guestPixmap)
+            self.predictLabel.setText('')
 
     def display_teamicon(self, team: int) -> QPixmap:
         """Display the icon of the home team selected for prediction.
@@ -438,6 +455,7 @@ class FuBaKI(QWidget):
             A QPixmap showing the desired team icon (or a dummy icon if image
             was not found).
         """
+        self.colon.setText(':')
         iconURL = self.teamdata.loc[self.teamdata['ID'] == team, 'icon'].values[0]
         iconExtension = iconURL.split('.')[-1]
         iconPath = f'{crawler.g_cache_path}/teamicon.{iconExtension}'
