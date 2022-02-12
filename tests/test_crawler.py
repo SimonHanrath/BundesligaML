@@ -49,7 +49,8 @@ def test_load_matchdata():
     assert (data['guestTeamIcon'] != '').all()
     assert (data['homeTeamID'] != data['guestTeamID']).all()
     assert (data['homeTeamName'] != data['guestTeamName']).all()
-    assert (data['datetimeUTC'] > pd.Timestamp.utcnow()).all()
+    timeLimit = pd.Timestamp.utcnow() - pd.offsets.Minute(90)
+    assert (data['datetimeUTC'] >= timeLimit).all()
 
 
 def test_get_data():
