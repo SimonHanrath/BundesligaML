@@ -12,9 +12,6 @@ from PyQt5.QtWidgets import (
     QCheckBox, QComboBox, QLabel, QPushButton)
 
 
-g_img_path = f'{os.path.dirname(os.path.abspath(__file__))}/img'
-
-
 class FuBaKI(QWidget):
     def __init__(self, parent=None):
         super(FuBaKI, self).__init__(parent)
@@ -409,11 +406,11 @@ class FuBaKI(QWidget):
             QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and away teams.')
             return  # exit
 
-        self.colon.setText(':')
-        homePixmap = self.display_teamicon(self.selectHomeTeam.currentData())
-        self.homeIcon.setPixmap(homePixmap)
-        guestPixmap = self.display_teamicon(self.selectGuestTeam.currentData())
-        self.guestIcon.setPixmap(guestPixmap)
+        # self.colon.setText(':')
+        # homePixmap = self.display_teamicon(self.selectHomeTeam.currentData())
+        # self.homeIcon.setPixmap(homePixmap)
+        # guestPixmap = self.display_teamicon(self.selectGuestTeam.currentData())
+        # self.guestIcon.setPixmap(guestPixmap)
         homeTeamName = str(self.selectHomeTeam.currentText())
         guestTeamName = str(self.selectGuestTeam.currentText())
         predictionList = self.model.predict(homeTeamName, guestTeamName)
@@ -462,7 +459,8 @@ class FuBaKI(QWidget):
             response.raise_for_status()
         except (requests.exceptions.HTTPError, requests.exceptions.Timeout,
                 requests.exceptions.ConnectionError):
-            pixmap = QPixmap(f'{g_img_path}/none.svg')
+            absPath = os.path.dirname(os.path.abspath(__file__))
+            pixmap = QPixmap(f'{absPath}/none.svg')
         else:
             with open(iconPath, 'wb') as imageFile:
                 imageFile.writelines(response.iter_content(1024))
@@ -489,8 +487,9 @@ class FuBaKI(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(f'{g_img_path}/icon.png'))
-    # app.setApplicationName('FuBaKI')
+    absPath = os.path.dirname(os.path.abspath(__file__))
+    app.setWindowIcon(QIcon(f'{absPath}/appicon.png'))
+    app.setApplicationName('FuBaKI')
     window = FuBaKI()
     window.show()
     sys.exit(app.exec_())
