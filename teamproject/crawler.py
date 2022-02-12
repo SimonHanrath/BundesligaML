@@ -146,7 +146,8 @@ def fetch_next_matches():
     responses = asyncio.run(fetch_queries(queries))
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
-    data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
+    utcnow = pd.Timestamp.utcnow()
+    data = data[data['datetimeUTC'] + pd.offsets.Minute(90) >= utcnow]
     minMatchDays = data.groupby('division')['matchday'].transform('min')
     data = data[data['matchday'] == minMatchDays]
     data = data.sort_values(['datetimeUTC', 'division']).reset_index()

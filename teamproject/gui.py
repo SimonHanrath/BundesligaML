@@ -76,9 +76,6 @@ class FuBaKI(QWidget):
         self.selectGuestTeam.addItem('Away Team')
         self.reset_items(self.selectGuestTeam)
         self.selectGuestTeam.currentIndexChanged.connect(self.change_guest_team)
-        self.predictButton = QPushButton('Show Results')
-        self.predictButton.clicked.connect(self.predict_result)
-        self.predictButton.setEnabled(False)
 
         self.colon = QLabel()
         font = QFont('Times New Roman', 35, weight=QFont.Bold)
@@ -95,7 +92,7 @@ class FuBaKI(QWidget):
         self.nextMatches.setMinimumWidth(280)
         self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
         self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.nextMatches.clicked.connect(self.select_teams)
+        self.nextMatches.doubleClicked.connect(self.select_teams)
         self.nextMatches.setColumnCount(3)
         self.nextMatches.verticalHeader().setVisible(False)
         columnLabels = ['Date', 'Home Team', 'Away Team']
@@ -138,15 +135,12 @@ class FuBaKI(QWidget):
         rightUILayout.addWidget(self.intvForceUpdate, 6, 1)
         rightUILayout.addWidget(QLabel(), 7, 0, 1, 3)
         rightUILayout.setRowStretch(7, 1)
-        # rightUILayout.addWidget(QLabel(), 9, 0, 1, 3)
-        # rightUILayout.setRowStretch(9, 1)
         rightUILayout.addWidget(self.selectTeamsLabel, 8, 0, 1, 3)
         rightUILayout.addWidget(self.selectHomeLabel, 9, 0)
         rightUILayout.addWidget(self.selectHomeTeam, 9, 1)
-        rightUILayout.addWidget(self.predictButton, 9, 3)
+        rightUILayout.addWidget(self.statisticButton, 9, 3)
         rightUILayout.addWidget(self.selectGuestLabel, 10, 0)
         rightUILayout.addWidget(self.selectGuestTeam, 10, 1)
-        rightUILayout.addWidget(self.statisticButton, 10, 3)
         rightUILayout.addWidget(QLabel(), 11, 0, 1, 3)
         rightUILayout.setRowStretch(11, 1)
         iconLayout = QHBoxLayout()
@@ -165,9 +159,9 @@ class FuBaKI(QWidget):
         leftUILayout.addWidget(self.nextMatches)
 
         ui = QHBoxLayout()
-        ui.addLayout(leftUILayout, 2)
+        ui.addLayout(leftUILayout, 1)
         ui.addSpacing(30)
-        ui.addLayout(rightUILayout, 3)
+        ui.addLayout(rightUILayout, 1)
         self.setLayout(ui)
 
     def init_content(self):
@@ -228,7 +222,6 @@ class FuBaKI(QWidget):
     def reset_prediction(self):
         """Reset all elements involved in displaying prediction results.
         """
-        self.predictButton.setEnabled(False)
         self.selectHomeTeam.setEnabled(False)
         self.selectGuestTeam.setEnabled(False)
         self.colon.setText('')
@@ -285,9 +278,9 @@ class FuBaKI(QWidget):
             if algo == 'baseline':
                 self.select_interval(0, 8)
             elif algo == 'poisson':
-                self.select_interval(2, 0)
+                self.select_interval(0, 70)
             elif algo == 'dixoncoles':
-                self.select_interval(numSeasons, 0)
+                self.select_interval(numSeasons - 1, 0)
                 self.selectFromDay.setCurrentIndex(1)
 
     def select_interval(self, seasons: int, matchdays: int):
@@ -297,9 +290,6 @@ class FuBaKI(QWidget):
             seasons (int): Number of seasons that shall be selected.
             matchdays (int): Number of match days that shall be selected.
         """
-        assert seasons >= 0 and matchdays >= 0, \
-            'Number of seasons and match days must be positive.'
-        seasons = max(seasons - 1, 0)
         toSeasonLast = self.selectToSeason.count() - 1
         self.selectToSeason.setCurrentIndex(toSeasonLast)
         toDayLast = self.selectToDay.count() - 1
@@ -324,7 +314,7 @@ class FuBaKI(QWidget):
 
     def select_teams(self, item: QTableWidgetItem):
         """Automatically select corresponding teams for prediction after
-        clicking on a row in next matches table.
+        double clicking on a row in next matches table.
 
         Args:
             item (QTableWidgetItem): The clicked item (i.e. table cell).
@@ -391,7 +381,6 @@ class FuBaKI(QWidget):
         self.selectGuestTeam.setEnabled(True)
         if self.nextMatches.rowCount() > 0:
             self.select_teams(self.nextMatches.item(0, 0))
-        self.predictButton.setEnabled(True)
         self.statisticButton.setEnabled(True)
 
     def predict_result(self):
@@ -399,24 +388,19 @@ class FuBaKI(QWidget):
         """
         homeTeamID = self.selectHomeTeam.currentData()
         guestTeamID = self.selectGuestTeam.currentData()
-        if None in (homeTeamID, guestTeamID):
-            QMessageBox.warning(self, 'Invalid Teams', 'Please select a home and away team.')
-            return  # exit
-        elif homeTeamID == guestTeamID:
-            QMessageBox.warning(self, 'Invalid Teams', 'Please select different home and away teams.')
+        if None in (homeTeamID, guestTeamID) or homeTeamID == guestTeamID:
+            self.statisticButton.setEnabled(False)
+            self.predictLabel.setText('')
             return  # exit
 
-        # self.colon.setText(':')
-        # homePixmap = self.display_teamicon(self.selectHomeTeam.currentData())
-        # self.homeIcon.setPixmap(homePixmap)
-        # guestPixmap = self.display_teamicon(self.selectGuestTeam.currentData())
-        # self.guestIcon.setPixmap(guestPixmap)
         homeTeamName = str(self.selectHomeTeam.currentText())
         guestTeamName = str(self.selectGuestTeam.currentText())
         predictionList = self.model.predict(homeTeamName, guestTeamName)
-        self.predictLabel.setText(f'Home: {round(predictionList[0]*100, 2)}%   '
-                                  + f'Draw: {round(predictionList[1]*100, 2)}%   '
-                                  + f'Away: {round(predictionList[2]*100, 2)}%')
+        predictionResult = f'Home: {round(predictionList[0]*100, 2)}%   '
+        predictionResult += f'Draw: {round(predictionList[1]*100, 2)}%   '
+        predictionResult += f'Away: {round(predictionList[2]*100, 2)}%'
+        self.predictLabel.setText(predictionResult)
+        self.statisticButton.setEnabled(True)
 
     def change_home_team(self, index: int):
         """Display the selected home team's icon.
@@ -428,6 +412,7 @@ class FuBaKI(QWidget):
         if homeTeamID is not None:
             self.homeIcon.setPixmap(self.display_teamicon(homeTeamID))
             self.predictLabel.setText('')
+            self.predict_result()
 
     def change_guest_team(self, index: int):
         """Display the selected away team's icon.
@@ -439,6 +424,7 @@ class FuBaKI(QWidget):
         if guestTeamID is not None:
             self.guestIcon.setPixmap(self.display_teamicon(guestTeamID))
             self.predictLabel.setText('')
+            self.predict_result()
 
     def display_teamicon(self, team: int) -> QPixmap:
         """Display the icon of the home team selected for prediction.
