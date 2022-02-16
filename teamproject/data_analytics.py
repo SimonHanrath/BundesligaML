@@ -285,7 +285,7 @@ def main(data, homeClub, guestClub):
             Example:
                 statistics("1. FC Nürnberg", "Hannover 96"))
         """
-        fig, axes = pp.subplots(nrows=3, ncols=1, figsize=(11, 11))
+        fig, axes = pp.subplots(nrows=3, ncols=1, figsize=(11, 9))
         fig.suptitle("Statistics", fontsize=20)
         createBar(axes[0], "overall Matches", "", " ", ["wins", "loses", "draws"], [matchResultsHome(homeClub), matchResultsGuest(guestClub)], max(matchResultsHome(homeClub)), homeClub, guestClub)
         createHistogram(axes[1], "overall goals", "number of goals", "goal count", ["wins", "loses", "draws"],[goalCountHome(homeClub), goalCountGuest(guestClub)], homeClub, guestClub)

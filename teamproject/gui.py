@@ -89,7 +89,7 @@ class FuBaKI(QWidget):
 
         self.nextMatchesLabel = QLabel('Upcoming matches:')
         self.nextMatches = QTableWidget()
-        self.nextMatches.setMinimumWidth(280)
+        self.nextMatches.setMinimumWidth(420)
         self.nextMatches.setEditTriggers(QTableWidget.NoEditTriggers)
         self.nextMatches.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.nextMatches.doubleClicked.connect(self.select_teams)
