@@ -15,7 +15,7 @@ Algorithms
 
 The program allows you to pick between different algorithms to predict the outcome of the chosen game. You can choose between the
 Baseline algorithm, Poisson Regression Algorithm and the Dixon Coles Algorithm. Because each of those algorithms has different properties,
-the chosen Timeframe for the crawled data can greatly impact the outcome. Because of this reason, here is a suggested timeframe for each of the 
+the chosen Timeframe for the crawled data can greatly impact the outcome. Because of this reason, here is a suggested timeframe for each of the
 Algorithms.
 
 Baseline Algorithm: Previous 8 Days
@@ -38,12 +38,12 @@ Installation
 
 1. Clone this repository to your device
 
-2. Install the needed packages via "pip install -e", this will install all the needed packages.
+2. Install the needed packages via `pip install -e .`, this will install all the needed packages.
 
-3. Execute the "main.py" file via the command "teamproject"
+3. Execute the `main.py` file via the command `teamproject`.
 
 Data
 ============
 
-The Data that is used by our Algorithms come from the very large source of https://www.openligadb.de/. Openligadb is a community based Database where anyone with an account 
+The Data that is used by our Algorithms come from the very large source of https://www.openligadb.de/. Openligadb is a community based Database where anyone with an account
 can add matches and add to the database.

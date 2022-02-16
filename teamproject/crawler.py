@@ -73,7 +73,7 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     homeTeams.set_axis(cols, axis=1, inplace=True)
     guestTeams.set_axis(cols, axis=1, inplace=True)
     teams = pd.concat([homeTeams, guestTeams], ignore_index=True)
-    teams.drop_duplicates(subset=['name'], keep='last', inplace=True)
+    teams.drop_duplicates(subset=['name'], inplace=True)
     teams = teams.sort_values('name').reset_index()
     return teams
 
