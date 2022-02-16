@@ -41,7 +41,6 @@ def get_data(fromSeason: int, fromMatchday: int, toSeason: int,
     # fetch data if necessary
     seasons['action'] = 'getmatchdata'
     leagues = seasons.explode('division')[['action', 'division', 'season']]
-    leagues = leagues[leagues['division'].isin(g_divisions)]
     responses = asyncio.run(fetch_queries(leagues.to_dict('records')))
     for key, val in groupby(responses, key=lambda d: d['params']['season']):
         frames = map(lambda d: parse_league(d['response']), val)
@@ -74,15 +73,15 @@ def get_teams(data: pd.DataFrame) -> pd.DataFrame:
     homeTeams.set_axis(cols, axis=1, inplace=True)
     guestTeams.set_axis(cols, axis=1, inplace=True)
     teams = pd.concat([homeTeams, guestTeams], ignore_index=True)
-    teams = teams.drop_duplicates(subset=['name']).sort_values('name')
-    teams.reset_index(drop=True, inplace=True)
+    teams.drop_duplicates(subset=['name'], keep='last', inplace=True)
+    teams = teams.sort_values('name').reset_index()
     return teams
 
 
 def refresh_ui_cache():
-    """Collects and executes all functions refreshing cached data which will be
-    displayed in the GUI. It is possible to call the functions separately to
-    decrease startup time of the GUI.
+    """Collects and executes all functions refreshing cached data (which will
+    be displayed in the GUI). Using threading and calling the functions
+    separately accelerates startup time of the GUI.
     """
     fetch_avail_seasons()
     fetch_avail_matchdays()
@@ -147,7 +146,8 @@ def fetch_next_matches():
     responses = asyncio.run(fetch_queries(queries))
     data = pd.concat(map(lambda d: parse_league(d['response']), responses))
     store_matchdata(str(currentSeason), data.copy())
-    data = data[data['datetimeUTC'] >= pd.Timestamp.utcnow()]
+    utcnow = pd.Timestamp.utcnow()
+    data = data[data['datetimeUTC'] + pd.offsets.Minute(90) >= utcnow]
     minMatchDays = data.groupby('division')['matchday'].transform('min')
     data = data[data['matchday'] == minMatchDays]
     data = data.sort_values(['datetimeUTC', 'division']).reset_index()
